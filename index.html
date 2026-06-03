@@ -22,7 +22,7 @@
   --radius:14px;--radius-sm:8px;--radius-xs:6px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:'DM Sans',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
 /* NAV */
 .nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:54px}
@@ -267,7 +267,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
   </div>
 
   <!-- ONBOARDING (first time) -->
-  <div id="runner-onboard" class="onboard" style="display:none">
+  <div id="runner-onboard" class="onboard" style="display:flex;flex-direction:column">
     <img src="data:image/png;base64,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" class="onboard-logo" alt="IranRunners">
     <div class="onboard-title">Welcome to IranRunners</div>
     <div class="onboard-sub">Track your training, stay connected with your coach, and reach your goals.</div>
@@ -1088,8 +1088,14 @@ function closeModal(e){if(!e||e.target===document.getElementById('modal'))docume
 
 // ── INIT ──
 var savedName=localStorage.getItem('ir_runner_name');
-if(savedName){currentRunner=savedName;loadRunnerDashboard(savedName);}
-else{document.getElementById('runner-onboard').style.display='flex';}
+if(savedName){
+  currentRunner=savedName;
+  document.getElementById('runner-onboard').style.display='none';
+  loadRunnerDashboard(savedName);
+} else {
+  document.getElementById('runner-onboard').style.display='flex';
+  document.getElementById('runner-onboard').style.flexDirection='column';
+}
 
 // PWA
 var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
