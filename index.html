@@ -9,10 +9,13 @@
 <meta name="theme-color" content="#0d1117">
 <title>IranRunners</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { background: #0d1117; color: #e6edf3; }
-input, textarea, select, button { font-family: system-ui, -apple-system, Arial, sans-serif; }
-input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:#0d1117; color:#e6edf3; }
+input,textarea,select,button { font-family:system-ui,-apple-system,Arial,sans-serif; }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:2px; }
 </style>
 </head>
 <body>
@@ -21,780 +24,686 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
-
-
 
 const SUPA_URL = "https://gadtdgwextsixnqmlnjm.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhZHRkZ3dleHRzaXhucW1sbmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0ODY4MDYsImV4cCI6MjA5NjA2MjgwNn0.JKRq7IiKC4oKzXed6M8PTiiY5JtfbJXv3G3UoBJk5Uk";
 const COACH_PASS = "125844";
-const LOGO = "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";
+const LOGO = "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";
 
-async function db(table, method = "GET", data = null, filter = "") {
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── DB ──
+async function db(table, method="GET", data=null, filter="") {
   try {
-    const url = `${SUPA_URL}/rest/v1/${table}${filter}`;
-    const headers = {
-      apikey: SUPA_KEY,
-      Authorization: `Bearer ${SUPA_KEY}`,
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      Prefer: method === "POST" ? "return=representation" : "return=representation",
-    };
-    const opts = { method, headers };
-    if (data) opts.body = JSON.stringify(data);
+    const url = SUPA_URL+"/rest/v1/"+table+filter;
+    const h = {apikey:SUPA_KEY, Authorization:"Bearer "+SUPA_KEY, "Content-Type":"application/json", Accept:"application/json", Prefer: method==="POST"?"return=representation":""};
+    const opts = {method, headers:h};
+    if(data) opts.body = JSON.stringify(data);
     const res = await fetch(url, opts);
-    if (!res.ok) return null;
+    if(!res.ok) { console.error("DB",res.status,await res.text()); return null; }
     return await res.json();
-  } catch (e) {
-    return null;
-  }
+  } catch(e) { console.error("DB",e); return null; }
 }
 
-function calcRecovery(r) {
-  let s = 70;
-  if (r.resting_hr > 65) s -= 15;
-  if (r.motivation <= 2) s -= 10;
-  if (r.sleep_hrs < 6 && r.sleep_hrs > 0) s -= 15;
-  if (r.pain === "Serious pain") s -= 20;
-  if (r.recovery === "Fast") s += 15;
-  if (r.sleep_quality === "Excellent") s += 10;
-  return Math.max(10, Math.min(100, s));
+async function dbUpdate(table, data, filter) {
+  try {
+    const url = SUPA_URL+"/rest/v1/"+table+filter;
+    const h = {apikey:SUPA_KEY, Authorization:"Bearer "+SUPA_KEY, "Content-Type":"application/json", Accept:"application/json", Prefer:"return=representation"};
+    const res = await fetch(url, {method:"PATCH", headers:h, body:JSON.stringify(data)});
+    if(!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
 }
 
-// ── CHIP COMPONENT ──
-function Chips({ options, value, onChange, multi = false }) {
-  return (
-    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-      {options.map((opt) => {
-        const sel = multi ? value.includes(opt.label) : value === opt.label;
-        return (
-          <button
-            key={opt.label}
-            onClick={() => {
-              if (multi) {
-                onChange(sel ? value.filter((v) => v !== opt.label) : [...value, opt.label]);
-              } else {
-                onChange(sel ? "" : opt.label);
-              }
-            }}
-            style={{
-              padding: "7px 14px", borderRadius: 20, fontSize: 13, fontWeight: 500,
-              border: `1px solid ${sel ? opt.color || "#c0392b" : "rgba(255,255,255,0.1)"}`,
-              background: sel ? opt.color || "#c0392b" : "rgba(255,255,255,0.05)",
-              color: sel ? "#fff" : "#8b949e", cursor: "pointer",
-            }}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
-  );
+// ── UTILS ──
+function secToTime(s) { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return h>0?`${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`:`${m}:${String(sec).padStart(2,"0")}`; }
+function paceToSec(p) { const parts=String(p).split(":"); return parts.length===2?parseInt(parts[0])*60+parseInt(parts[1]):parseFloat(p)*60; }
+function secToPace(s) { const m=Math.floor(s/60),sec=Math.round(s%60); return m+":"+String(sec).padStart(2,"0"); }
+function calcVo2(tempo) { if(!tempo||tempo<=0) return 0; const spd=60/tempo; return Math.round((-4.60+0.182258*spd+0.000104*spd*spd)/0.8); }
+function calcRecovery(r) { let s=70; if(r.resting_hr>65)s-=15; if(r.motivation<=2)s-=10; if(r.sleep_hrs<6&&r.sleep_hrs>0)s-=15; if(r.pain==="Serious pain")s-=20; if(r.recovery==="Fast")s+=15; if(r.sleep_quality==="Excellent")s+=10; return Math.max(10,Math.min(100,s)); }
+
+// ── STYLE HELPERS ──
+const C = {
+  bg:"#0d1117", bg2:"#161b22", bg3:"#21262d", card:"#1c2128",
+  border:"rgba(255,255,255,0.08)", accent:"#c0392b", accent2:"#e74c3c",
+  green:"#27ae60", warn:"#f39c12", danger:"#e74c3c", blue:"#2980b9",
+  text:"#e6edf3", text2:"#8b949e", text3:"#484f58",
+};
+const s = (obj) => obj;
+
+// ── COMPONENTS ──
+function Inp({placeholder,type="text",value,onChange,min,max,step,style={}}) {
+  return React.createElement("input",{type,placeholder,value:value||"",min,max,step,onChange:e=>onChange(e.target.value),style:{width:"100%",background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"11px 13px",fontSize:14,color:C.text,outline:"none",WebkitAppearance:"none",...style}});
+}
+function Fld({label,children,row}) {
+  return React.createElement("div",{style:{marginBottom:14,display:row?"flex":undefined,gap:row?10:undefined,alignItems:row?"center":undefined}},
+    label&&React.createElement("div",{style:{fontSize:12,color:C.text2,marginBottom:row?0:6,fontWeight:500,flexShrink:row?0:undefined,width:row?120:undefined}},label),
+    children);
+}
+function Card({title,children,style={}}) {
+  return React.createElement("div",{style:{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:20,marginBottom:12,...style}},
+    title&&React.createElement("div",{style:{fontSize:14,fontWeight:700,marginBottom:16}},title),
+    children);
+}
+function Btn({children,onClick,secondary,danger,sm,full=true,loading}) {
+  return React.createElement("button",{onClick,disabled:loading,style:{width:full?"100%":"auto",padding:sm?"8px 16px":"14px 20px",borderRadius:sm?20:14,border:secondary||danger?"1px solid "+(danger?"rgba(231,76,60,.3)":C.border):"none",background:danger?"rgba(231,76,60,.1)":secondary?"transparent":C.accent,color:danger?C.danger:secondary?C.text2:"#fff",fontSize:sm?13:15,fontWeight:700,cursor:"pointer",marginTop:full&&!sm?12:0,opacity:loading?.7:1}},loading?"Loading...":children);
+}
+function Chips({options,value,onChange}) {
+  return React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
+    options.map(o=>{
+      const sel=value===o.label;
+      return React.createElement("button",{key:o.label,onClick:()=>onChange(sel?"":o.label),style:{padding:"7px 14px",borderRadius:20,fontSize:12,fontWeight:500,border:"1px solid "+(sel?o.color||C.accent:C.border),background:sel?o.color||C.accent:"rgba(255,255,255,.04)",color:sel?"#fff":C.text2,cursor:"pointer"}},o.label);
+    }));
+}
+function Tag({children,color=C.green}) {
+  return React.createElement("span",{style:{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:color+"22",color}},children);
+}
+function Tabs({tabs,active,onChange}) {
+  return React.createElement("div",{style:{display:"flex",gap:2,background:C.bg3,borderRadius:8,padding:3,marginBottom:16}},
+    tabs.map(t=>React.createElement("button",{key:t.id,onClick:()=>onChange(t.id),style:{flex:1,padding:"8px 4px",fontSize:11,fontWeight:600,border:"none",background:active===t.id?C.card:"transparent",color:active===t.id?C.text:C.text3,cursor:"pointer",borderRadius:6,whiteSpace:"nowrap"}},t.label)));
 }
 
-// ── FIELD COMPONENT ──
-function Field({ label, children }) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      {label && <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 6, fontWeight: 500 }}>{label}</div>}
-      {children}
-    </div>
-  );
-}
-
-function Input({ placeholder, type = "text", value, onChange, min, max, step }) {
-  return (
-    <input
-      type={type} placeholder={placeholder} value={value} min={min} max={max} step={step}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        width: "100%", background: "#161b22", border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 8, padding: "11px 13px", fontSize: 14, color: "#e6edf3",
-        outline: "none", WebkitAppearance: "none",
-      }}
-    />
-  );
-}
-
-function Card({ title, children }) {
-  return (
-    <div style={{ background: "#1c2128", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 20, marginBottom: 12 }}>
-      {title && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>{title}</div>}
-      {children}
-    </div>
-  );
-}
-
-function Btn({ children, onClick, secondary, sm }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: sm ? "auto" : "100%", padding: sm ? "8px 16px" : "14px 20px",
-        borderRadius: sm ? 20 : 14, border: secondary ? "1px solid rgba(255,255,255,0.1)" : "none",
-        background: secondary ? "transparent" : "#c0392b", color: secondary ? "#8b949e" : "#fff",
-        fontSize: sm ? 13 : 15, fontWeight: 700, cursor: "pointer", marginTop: sm ? 0 : 12,
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-// ── ONBOARDING ──
-function Onboard({ onSetup, onLogin }) {
-  return (
-    <div style={{ minHeight: "85vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 20px", textAlign: "center" }}>
-      <img src={`data:image/png;base64,${LOGO}`} style={{ height: 56, marginBottom: 24 }} alt="IranRunners" />
-      <div style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>Welcome to IranRunners</div>
-      <div style={{ fontSize: 14, color: "#8b949e", marginBottom: 40, lineHeight: 1.6, maxWidth: 280 }}>
-        Track your training, stay connected with your coach, and reach your goals.
-      </div>
-      <Btn onClick={onSetup}>Create Profile</Btn>
-      <Btn onClick={onLogin} secondary>I already have a profile</Btn>
-    </div>
-  );
-}
-
-// ── SETUP ──
-function Setup({ onSave }) {
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [rhr, setRhr] = useState("");
-  const [maxDist, setMaxDist] = useState("");
-  const [sessions, setSessions] = useState("");
-  const [category, setCategory] = useState("");
-  const [goal, setGoal] = useState("");
-  const [pr5, setPr5] = useState(""); const [pr10, setPr10] = useState("");
-  const [pr21, setPr21] = useState(""); const [pr42, setPr42] = useState("");
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    if (!name.trim()) { alert("Please enter your name"); return; }
-    setSaving(true);
-    const profile = {
-      name: name.trim(), age: parseInt(age) || null, weight: parseFloat(weight) || null,
-      height: parseInt(height) || null, resting_hr: parseInt(rhr) || null,
-      max_distance: parseFloat(maxDist) || null, weekly_sessions: parseInt(sessions) || null,
-      training_category: category || null,
-      goals: [goal, pr5 ? `5K: ${pr5}min` : "", pr10 ? `10K: ${pr10}min` : "", pr21 ? `HM: ${pr21}min` : "", pr42 ? `M: ${pr42}min` : "", notes].filter(Boolean).join(", "),
-    };
-    await db("runners", "POST", profile);
-    localStorage.setItem("ir_runner", name.trim());
-    setSaving(false);
-    onSave(name.trim());
-  };
-
-  return (
-    <div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#484f58", textTransform: "uppercase", letterSpacing: "0.1em", margin: "20px 0 10px" }}>Create Your Profile</div>
-      <Card title="Basic Info">
-        <Field label="Full Name"><Input placeholder="e.g. Ali Rezaei" value={name} onChange={setName} /></Field>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Field label="Age"><Input type="number" placeholder="28" value={age} onChange={setAge} /></Field>
-          <Field label="Weight (kg)"><Input type="number" placeholder="70" value={weight} onChange={setWeight} /></Field>
-          <Field label="Height (cm)"><Input type="number" placeholder="175" value={height} onChange={setHeight} /></Field>
-          <Field label="Resting HR"><Input type="number" placeholder="55" value={rhr} onChange={setRhr} /></Field>
-        </div>
-      </Card>
-      <Card title="Training Background">
-        <Field label="Max distance ever run (km)"><Input type="number" placeholder="21" value={maxDist} onChange={setMaxDist} /></Field>
-        <Field label="Weekly sessions"><Input type="number" placeholder="4" value={sessions} onChange={setSessions} /></Field>
-        <Field label="Level">
-          <Chips value={category} onChange={setCategory} options={[{label:"Beginner"},{label:"Intermediate"},{label:"Advanced"},{label:"Elite"}]} />
-        </Field>
-      </Card>
-      <Card title="Personal Records">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Field label="5km PR (min)"><Input type="number" placeholder="22" step="0.1" value={pr5} onChange={setPr5} /></Field>
-          <Field label="10km PR (min)"><Input type="number" placeholder="47" step="0.1" value={pr10} onChange={setPr10} /></Field>
-          <Field label="Half Marathon (min)"><Input type="number" placeholder="105" step="0.1" value={pr21} onChange={setPr21} /></Field>
-          <Field label="Marathon (min)"><Input type="number" placeholder="240" step="0.1" value={pr42} onChange={setPr42} /></Field>
-        </div>
-      </Card>
-      <Card title="Goals">
-        <Field label="Primary goal">
-          <Chips value={goal} onChange={setGoal} options={["Finish 5K","Run 10K","Half Marathon","Marathon","Improve pace","Lose weight","Stay healthy"].map(l=>({label:l}))} />
-        </Field>
-        <Field label="Notes">
-          <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={2} placeholder="e.g. Sub-4h marathon by end of year..." style={{width:"100%",background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"11px 13px",fontSize:14,color:"#e6edf3",outline:"none",resize:"none"}} />
-        </Field>
-      </Card>
-      <Btn onClick={save}>{saving ? "Saving..." : "Save Profile"}</Btn>
-    </div>
-  );
-}
-
-// ── LOGIN ──
-function Login({ onLogin }) {
-  const [name, setName] = useState("");
-  const [err, setErr] = useState("");
-  return (
-    <div style={{ minHeight: "80vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
-      <div style={{ fontSize: 44, marginBottom: 20 }}>🏃</div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Welcome Back</div>
-      <div style={{ fontSize: 14, color: "#8b949e", marginBottom: 32 }}>Enter your name to continue</div>
-      <input type="text" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)}
-        onKeyDown={e=>e.key==="Enter"&&onLogin(name.trim())}
-        style={{ width: "100%", maxWidth: 260, background: "#1c2128", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: 14, fontSize: 16, color: "#e6edf3", outline: "none", textAlign: "center", marginBottom: 12 }} />
-      <Btn onClick={()=>{ if(!name.trim()){setErr("Please enter your name");return;} onLogin(name.trim()); }}>Continue</Btn>
-      {err && <div style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{err}</div>}
-    </div>
-  );
-}
-
-// ── WEEKLY FORM ──
-function WeeklyForm({ runnerName, onSubmit }) {
-  const [km, setKm] = useState(""); const [sessions, setSessions] = useState(""); const [longrun, setLongrun] = useState("");
-  const [pace, setPace] = useState(""); const [tempo, setTempo] = useState(""); const [cadence, setCadence] = useState("");
-  const [pctEasy, setPctEasy] = useState(""); const [pctMod, setPctMod] = useState(""); const [pctHard, setPctHard] = useState("");
-  const [rhr, setRhr] = useState(""); const [sleepHrs, setSleepHrs] = useState("");
-  const [sleep, setSleep] = useState(""); const [pain, setPain] = useState(""); const [painLoc, setPainLoc] = useState("");
-  const [weightChange, setWeightChange] = useState(""); const [motivation, setMotivation] = useState(3);
-  const [energy, setEnergy] = useState(""); const [stress, setStress] = useState(""); const [recovery, setRecovery] = useState("");
-  const [raceDist, setRaceDist] = useState(""); const [raceTime, setRaceTime] = useState(""); const [raceCond, setRaceCond] = useState("");
-  const [notes, setNotes] = useState(""); const [rpe, setRpe] = useState(5);
-  const [saving, setSaving] = useState(false);
+// ── AUTH ──
+function AuthScreen({onLogin}) {
+  const [mode,setMode]=useState("login");
+  const [email,setEmail]=useState(""); const [pass,setPass]=useState(""); const [name,setName]=useState("");
+  const [err,setErr]=useState(""); const [loading,setLoading]=useState(false);
 
   const submit = async () => {
-    setSaving(true);
-    const alerts = [];
-    let status = "ok";
-    if (pain === "Serious pain") { status = "danger"; alerts.push("Serious pain"); }
-    if (parseInt(rhr) > 65 && rhr) { if (status === "ok") status = "warn"; alerts.push("High resting HR"); }
-    if (motivation <= 2) { if (status === "ok") status = "warn"; alerts.push("Low motivation"); }
-    if (stress === "Very high") { if (status === "ok") status = "warn"; alerts.push("Very high stress"); }
-    if (pain === "Mild pain") { if (status === "ok") status = "warn"; alerts.push("Mild pain"); }
-    if (parseFloat(sleepHrs) < 6 && sleepHrs) { if (status === "ok") status = "warn"; alerts.push("Sleep < 6h"); }
-    if (energy === "Very low") { if (status === "ok") status = "warn"; alerts.push("Very low energy"); }
-
-    const rep = {
-      runner_name: runnerName, km: parseFloat(km)||0, sessions: parseInt(sessions)||0,
-      long_run: parseFloat(longrun)||0, easy_pace: parseFloat(pace)||0, tempo_pace: parseFloat(tempo)||0,
-      cadence: parseInt(cadence)||0, pct_easy: parseInt(pctEasy)||0, pct_mod: parseInt(pctMod)||0,
-      pct_hard: parseInt(pctHard)||0, resting_hr: parseInt(rhr)||0, sleep_hrs: parseFloat(sleepHrs)||0,
-      sleep_quality: sleep, pain, pain_location: painLoc, weight_change: weightChange,
-      motivation, energy, stress, recovery, race_dist: parseFloat(raceDist)||0,
-      race_time: parseFloat(raceTime)||0, race_conditions: raceCond, notes, status,
-      alerts: alerts.join(", "),
-    };
-    await db("weekly_reports", "POST", rep);
-    setSaving(false);
-    onSubmit();
+    if(!email||!pass){setErr("Please fill all fields");return;}
+    if(mode==="signup"&&!name){setErr("Please enter your name");return;}
+    setLoading(true); setErr("");
+    if(mode==="signup") {
+      const existing = await db("users","GET",null,"?email=eq."+encodeURIComponent(email)+"&limit=1");
+      if(existing&&existing.length>0){setErr("Email already registered");setLoading(false);return;}
+      const res = await db("users","POST",{email,password:pass,name,role:"runner"});
+      if(res&&res.length>0){localStorage.setItem("ir_user",JSON.stringify(res[0]));onLogin(res[0]);}
+      else setErr("Error creating account");
+    } else {
+      const res = await db("users","GET",null,"?email=eq."+encodeURIComponent(email)+"&password=eq."+encodeURIComponent(pass)+"&limit=1");
+      if(res&&res.length>0){localStorage.setItem("ir_user",JSON.stringify(res[0]));onLogin(res[0]);}
+      else setErr("Invalid email or password");
+    }
+    setLoading(false);
   };
 
-  const now = new Date();
-  return (
-    <div>
-      <div style={{ background: "linear-gradient(135deg,#1a2540,#0d1117)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 24, marginBottom: 12 }}>
-        <div style={{ fontSize: 12, color: "#484f58", marginBottom: 4 }}>Week {now.getDate()}/{now.getMonth()+1}/{now.getFullYear()}</div>
-        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Weekly Report</div>
-        <div style={{ fontSize: 13, color: "#8b949e" }}>A few minutes — your coach sees everything</div>
-      </div>
-
-      <Card title="Training Data">
-        <Field label="Total volume (km)"><Input type="number" placeholder="52" value={km} onChange={setKm} /></Field>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Field label="Sessions"><Input type="number" placeholder="5" value={sessions} onChange={setSessions} /></Field>
-          <Field label="Long run (km)"><Input type="number" placeholder="18" value={longrun} onChange={setLongrun} /></Field>
-          <Field label="Easy pace (min/km)"><Input type="number" placeholder="5.30" step="0.01" value={pace} onChange={setPace} /></Field>
-          <Field label="Tempo pace (min/km)"><Input type="number" placeholder="4.20" step="0.01" value={tempo} onChange={setTempo} /></Field>
-        </div>
-        <Field label="Cadence (spm) — optional"><Input type="number" placeholder="168" value={cadence} onChange={setCadence} /></Field>
-        <Field label="Intensity distribution">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-            <div><div style={{ fontSize: 10, color: "#484f58", marginBottom: 4 }}>Easy %</div><Input type="number" placeholder="70" value={pctEasy} onChange={setPctEasy} /></div>
-            <div><div style={{ fontSize: 10, color: "#484f58", marginBottom: 4 }}>Moderate %</div><Input type="number" placeholder="20" value={pctMod} onChange={setPctMod} /></div>
-            <div><div style={{ fontSize: 10, color: "#484f58", marginBottom: 4 }}>Hard %</div><Input type="number" placeholder="10" value={pctHard} onChange={setPctHard} /></div>
-          </div>
-        </Field>
-        <Field label={`Session difficulty: ${rpe}/10`}>
-          <input type="range" min={1} max={10} value={rpe} onChange={e=>setRpe(parseInt(e.target.value))}
-            style={{ width: "100%", accentColor: "#c0392b" }} />
-        </Field>
-      </Card>
-
-      <Card title="Body Signals">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Field label="Resting HR (bpm)"><Input type="number" placeholder="54" value={rhr} onChange={setRhr} /></Field>
-          <Field label="Sleep hours"><Input type="number" placeholder="7.5" step="0.5" value={sleepHrs} onChange={setSleepHrs} /></Field>
-        </div>
-        <Field label="Sleep quality">
-          <Chips value={sleep} onChange={setSleep} options={["Poor","Average","Good","Excellent"].map(l=>({label:l}))} />
-        </Field>
-        <Field label="Pain / injury">
-          <Chips value={pain} onChange={setPain} options={[{label:"No pain"},{label:"Mild pain",color:"#f39c12"},{label:"Serious pain",color:"#e74c3c"}]} />
-        </Field>
-        <Field label="Pain location (if any)"><Input placeholder="e.g. right knee" value={painLoc} onChange={setPainLoc} /></Field>
-        <Field label="Weight change">
-          <Chips value={weightChange} onChange={setWeightChange} options={["Lost","Stable","Gained"].map(l=>({label:l}))} />
-        </Field>
-      </Card>
-
-      <Card title="Mental & Recovery">
-        <Field label={`Motivation: ${motivation}/5`}>
-          <input type="range" min={1} max={5} value={motivation} onChange={e=>setMotivation(parseInt(e.target.value))}
-            style={{ width: "100%", accentColor: "#c0392b" }} />
-        </Field>
-        <Field label="Energy level">
-          <Chips value={energy} onChange={setEnergy} options={[{label:"Very low",color:"#e74c3c"},{label:"Low",color:"#f39c12"},{label:"Normal"},{label:"High"}]} />
-        </Field>
-        <Field label="Life stress">
-          <Chips value={stress} onChange={setStress} options={[{label:"Low"},{label:"Moderate"},{label:"High",color:"#f39c12"},{label:"Very high",color:"#e74c3c"}]} />
-        </Field>
-        <Field label="Recovery feeling">
-          <Chips value={recovery} onChange={setRecovery} options={[{label:"Very slow",color:"#e74c3c"},{label:"Slow",color:"#f39c12"},{label:"Normal"},{label:"Fast",color:"#27ae60"}]} />
-        </Field>
-      </Card>
-
-      <Card title="Race / Time Trial (if any)">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Field label="Distance (km)"><Input type="number" placeholder="10" step="0.1" value={raceDist} onChange={setRaceDist} /></Field>
-          <Field label="Time (min)"><Input type="number" placeholder="42.5" step="0.1" value={raceTime} onChange={setRaceTime} /></Field>
-        </div>
-        <Field label="Conditions">
-          <Chips value={raceCond} onChange={setRaceCond} options={["Good","Hot","Rainy","Windy","Hilly"].map(l=>({label:l}))} />
-        </Field>
-      </Card>
-
-      <Card title="Notes for Coach">
-        <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Anything your coach should know..."
-          style={{ width:"100%",background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"11px 13px",fontSize:14,color:"#e6edf3",outline:"none",resize:"none" }} />
-      </Card>
-      <Btn onClick={submit}>{saving ? "Submitting..." : "Submit Weekly Report"}</Btn>
-    </div>
-  );
+  return React.createElement("div",{style:{minHeight:"85vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
+    React.createElement("img",{src:"data:image/png;base64,"+LOGO,style:{height:52,marginBottom:28},alt:""}),
+    React.createElement("div",{style:{width:"100%",maxWidth:340}},
+      React.createElement("div",{style:{display:"flex",gap:2,background:C.bg3,borderRadius:8,padding:3,marginBottom:20}},
+        ["login","signup"].map(m=>React.createElement("button",{key:m,onClick:()=>{setMode(m);setErr("");},style:{flex:1,padding:8,fontSize:13,fontWeight:600,border:"none",background:m===mode?C.card:"transparent",color:m===mode?C.text:C.text3,cursor:"pointer",borderRadius:6}},m==="login"?"Sign In":"Sign Up"))),
+      React.createElement(Card,null,
+        mode==="signup"&&React.createElement(Fld,{label:"Full Name"},React.createElement(Inp,{placeholder:"Ali Rezaei",value:name,onChange:setName})),
+        React.createElement(Fld,{label:"Email"},React.createElement(Inp,{type:"email",placeholder:"you@example.com",value:email,onChange:setEmail})),
+        React.createElement(Fld,{label:"Password"},React.createElement(Inp,{type:"password",placeholder:"Min 6 characters",value:pass,onChange:setPass})),
+        err&&React.createElement("div",{style:{color:C.danger,fontSize:13,marginBottom:8}},err),
+        React.createElement(Btn,{onClick:submit,loading},mode==="login"?"Sign In":"Create Account")),
+      mode==="login"&&React.createElement("div",{style:{textAlign:"center",marginTop:12,fontSize:13,color:C.text3}},
+        "Don't have an account? ",
+        React.createElement("span",{onClick:()=>setMode("signup"),style:{color:C.accent,cursor:"pointer"}},"Sign Up"))));
 }
 
-// ── RUNNER DASHBOARD ──
-function RunnerDashboard({ runnerName }) {
-  const [tab, setTab] = useState("weekly");
-  const [submitted, setSubmitted] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [lastReport, setLastReport] = useState(null);
-  const [plan, setPlan] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [msgText, setMsgText] = useState("");
-  const chatRef = useRef(null);
+// ── STRATEGY / PACE CALCULATOR ──
+function StrategyTab() {
+  const [dist,setDist]=useState("42.2"); const [targetTime,setTargetTime]=useState(""); 
+  const [strategy,setStrategy]=useState("even"); const [customSplit,setCustomSplit]=useState("5");
+  const [result,setResult]=useState(null);
+  const [paceInput,setPaceInput]=useState(""); const [distForTime,setDistForTime]=useState("42.2");
+  const [timeResult,setTimeResult]=useState(null);
+  const [tab,setTab]=useState("race");
 
-  useEffect(() => {
-    db("runners","GET",null,`?name=eq.${encodeURIComponent(runnerName)}&limit=1`).then(r=>r&&r[0]&&setProfile(r[0]));
-    db("weekly_reports","GET",null,`?runner_name=eq.${encodeURIComponent(runnerName)}&order=created_at.desc&limit=1`).then(r=>r&&r[0]&&setLastReport(r[0]));
-    db("training_plans","GET",null,`?runner_name=eq.${encodeURIComponent(runnerName)}&order=created_at.desc&limit=1`).then(r=>r&&r[0]&&setPlan(r[0]));
-  }, [runnerName, submitted]);
+  const calcRaceStrategy = () => {
+    const d=parseFloat(dist); const t=paceToSec(targetTime);
+    if(!d||!t){return;}
+    const avgPaceSec=t/d; const splits=[];
+    const interval=parseFloat(customSplit)||5;
+    let km=0;
+    while(km<d) {
+      const segEnd=Math.min(km+interval,d); const segDist=segEnd-km;
+      let segPace=avgPaceSec;
+      if(strategy==="negative"){segPace=km<d/2?avgPaceSec*1.03:avgPaceSec*0.97;}
+      else if(strategy==="positive"){segPace=km<d/2?avgPaceSec*0.97:avgPaceSec*1.03;}
+      else if(strategy==="fast-start"){segPace=km<5?avgPaceSec*0.95:avgPaceSec*1.01;}
+      splits.push({from:km,to:segEnd,dist:segDist,pace:segPace,time:segPace*segDist});
+      km=segEnd;
+    }
+    const zones=[
+      {name:"Z1 Easy",pct:0.65,pace:avgPaceSec*1.4},
+      {name:"Z2 Aerobic",pct:0.72,pace:avgPaceSec*1.2},
+      {name:"Z3 Tempo",pct:0.82,pace:avgPaceSec*1.05},
+      {name:"Z4 Threshold",pct:0.89,pace:avgPaceSec*0.98},
+      {name:"Z5 VO2max",pct:0.95,pace:avgPaceSec*0.9},
+    ];
+    setResult({splits,avgPace:avgPaceSec,totalTime:t,zones,dist:d});
+  };
 
-  useEffect(() => {
-    if (tab === "chat") loadMessages();
-  }, [tab]);
+  const calcPaceForTime = () => {
+    const d=parseFloat(distForTime); const p=paceToSec(paceInput);
+    if(!d||!p) return;
+    const totalSec=p*d;
+    setTimeResult({time:secToTime(Math.round(totalSec)),pace:secToPace(p),dist:d,vo2:calcVo2(p/60)});
+  };
+
+  return React.createElement("div",null,
+    React.createElement(Tabs,{tabs:[{id:"race",label:"Race Strategy"},{id:"pace",label:"Pace → Time"},{id:"zones",label:"Training Zones"}],active:tab,onChange:setTab}),
+
+    tab==="race"&&React.createElement("div",null,
+      React.createElement(Card,{title:"Race Strategy Calculator"},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+          React.createElement(Fld,{label:"Distance (km)"},React.createElement(Inp,{type:"number",placeholder:"42.2",value:dist,onChange:setDist,step:"0.1"})),
+          React.createElement(Fld,{label:"Target time (mm:ss or h:mm:ss)"},React.createElement(Inp,{placeholder:"3:45:00",value:targetTime,onChange:setTargetTime}))),
+        React.createElement(Fld,{label:"Strategy"},
+          React.createElement(Chips,{value:strategy,onChange:setStrategy,options:[{label:"even"},{label:"negative"},{label:"positive"},{label:"fast-start"}]})),
+        React.createElement(Fld,{label:"Split every (km)"},React.createElement(Inp,{type:"number",placeholder:"5",value:customSplit,onChange:setCustomSplit,min:"1",max:"10"})),
+        React.createElement(Btn,{onClick:calcRaceStrategy},"Calculate Strategy")),
+      result&&React.createElement("div",null,
+        React.createElement(Card,{title:"Split Plan"},
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,marginBottom:8}},
+            ["From","To","Pace","Time"].map(h=>React.createElement("div",{key:h,style:{fontSize:10,fontWeight:700,color:C.text3}},h))),
+          result.splits.map((s,i)=>React.createElement("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,padding:"6px 0",borderTop:"1px solid "+C.border}},
+            React.createElement("div",{style:{fontSize:12,color:C.text2}},s.from+"km"),
+            React.createElement("div",{style:{fontSize:12,color:C.text2}},s.to.toFixed(1)+"km"),
+            React.createElement("div",{style:{fontSize:12,fontWeight:600,color:C.accent}},secToPace(s.pace)+"/km"),
+            React.createElement("div",{style:{fontSize:12,color:C.text}},secToTime(Math.round(s.time)))))),
+        React.createElement(Card,{title:"Summary"},
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
+            [{l:"Total distance",v:result.dist+"km"},{l:"Target time",v:secToTime(result.totalTime)},{l:"Avg pace",v:secToPace(result.avgPace)+"/km"},{l:"Est. VO₂max",v:calcVo2(result.avgPace/60)+"ml/kg/min"}]
+            .map(x=>React.createElement("div",{key:x.l,style:{background:C.bg3,borderRadius:8,padding:10}},
+              React.createElement("div",{style:{fontSize:10,color:C.text3,marginBottom:3}},x.l),
+              React.createElement("div",{style:{fontSize:15,fontWeight:700,color:C.accent}},x.v))))))),
+
+    tab==="pace"&&React.createElement(Card,{title:"Pace → Finish Time"},
+      React.createElement(Fld,{label:"Distance (km)"},React.createElement(Inp,{type:"number",placeholder:"42.2",value:distForTime,onChange:setDistForTime,step:"0.1"})),
+      React.createElement(Fld,{label:"Target pace (min:sec per km)"},React.createElement(Inp,{placeholder:"5:20",value:paceInput,onChange:setPaceInput})),
+      React.createElement(Btn,{onClick:calcPaceForTime},"Calculate"),
+      timeResult&&React.createElement("div",{style:{marginTop:12}},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
+          [{l:"Finish time",v:timeResult.time,c:C.accent},{l:"Pace",v:timeResult.pace+"/km"},{l:"Distance",v:timeResult.dist+"km"},{l:"Est. VO₂max",v:timeResult.vo2+" ml/kg/min"}]
+          .map(x=>React.createElement("div",{key:x.l,style:{background:C.bg3,borderRadius:8,padding:12}},
+            React.createElement("div",{style:{fontSize:10,color:C.text3,marginBottom:3}},x.l),
+            React.createElement("div",{style:{fontSize:16,fontWeight:700,color:x.c||C.text}},x.v)))))),
+
+    tab==="zones"&&React.createElement(Card,{title:"Training Zones Calculator"},
+      React.createElement(Fld,{label:"Your race pace (min:sec per km)"},React.createElement(Inp,{placeholder:"5:20",value:paceInput,onChange:setPaceInput})),
+      React.createElement(Btn,{onClick:()=>{const p=paceToSec(paceInput);if(p)setTimeResult({zones:[{name:"Z1 Recovery",range:"<65% effort",pace:secToPace(p*1.5),use:"Warm-up, cool-down"},{name:"Z2 Easy",range:"65–75%",pace:secToPace(p*1.25),use:"Long runs, base building"},{name:"Z3 Tempo",range:"75–85%",pace:secToPace(p*1.05),use:"Tempo runs, cruise intervals"},{name:"Z4 Threshold",range:"85–92%",pace:secToPace(p*0.97),use:"LT intervals, race pace"},{name:"Z5 VO₂max",range:">92%",pace:secToPace(p*0.88),use:"Short intervals, speed work"}]})}},"Calculate Zones"),
+      timeResult&&timeResult.zones&&timeResult.zones.map((z,i)=>React.createElement("div",{key:i,style:{background:C.bg3,borderRadius:8,padding:12,marginTop:8}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}},
+          React.createElement("div",{style:{fontSize:13,fontWeight:700}},z.name),
+          React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.accent}},z.pace+"/km")),
+        React.createElement("div",{style:{fontSize:11,color:C.text3}},z.range+" · "+z.use)))));
+}
+
+// ── BIOMECHANICS ──
+function BiomechanicsTab({user}) {
+  const [file,setFile]=useState(null); const [preview,setPreview]=useState(null);
+  const [angle,setAngle]=useState(""); const [notes,setNotes]=useState(""); const [sent,setSent]=useState(false);
+  const [history,setHistory]=useState([]);
+
+  useEffect(()=>{
+    db("biomechanics","GET",null,"?runner_name=eq."+encodeURIComponent(user.name)+"&order=created_at.desc&limit=10").then(r=>r&&setHistory(r));
+  },[]);
+
+  const handleFile = (e) => {
+    const f=e.target.files[0]; if(!f)return; setFile(f);
+    const reader=new FileReader(); reader.onload=ev=>setPreview(ev.target.result); reader.readAsDataURL(f);
+  };
+
+  const submit = async () => {
+    await db("biomechanics","POST",{runner_name:user.name,view_angle:angle,notes,photo_url:"uploaded",created_at:new Date().toISOString()});
+    setSent(true);
+  };
+
+  return React.createElement("div",null,
+    sent?React.createElement("div",{style:{textAlign:"center",padding:"40px 20px"}},
+      React.createElement("div",{style:{fontSize:40,marginBottom:12}},"📸"),
+      React.createElement("div",{style:{fontSize:18,fontWeight:700,marginBottom:8}},"Sent to coach!"),
+      React.createElement(Btn,{onClick:()=>{setSent(false);setPreview(null);setFile(null);}},"+Upload another"))
+    :React.createElement(Card,{title:"Upload Running Photo for Analysis"},
+      React.createElement("div",{onClick:()=>document.getElementById("bio-input").click(),style:{background:C.bg2,border:"1px dashed "+C.border,borderRadius:8,padding:24,textAlign:"center",cursor:"pointer",marginBottom:12}},
+        preview?React.createElement("img",{src:preview,style:{width:"100%",maxHeight:200,objectFit:"cover",borderRadius:8}}):
+        React.createElement("div",null,React.createElement("div",{style:{fontSize:32,marginBottom:8}},"📷"),React.createElement("div",{style:{fontSize:13,color:C.text2}},"Tap to select photo"))),
+      React.createElement("input",{type:"file",id:"bio-input",accept:"image/*",style:{display:"none"},onChange:handleFile}),
+      React.createElement(Fld,{label:"View angle"},React.createElement(Chips,{value:angle,onChange:setAngle,options:[{label:"Side"},{label:"Back"},{label:"Front"}]})),
+      React.createElement(Fld,{label:"Notes"},React.createElement("textarea",{value:notes,onChange:e=>setNotes(e.target.value),rows:2,placeholder:"e.g. easy pace, feeling tired...",style:{width:"100%",background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}})),
+      React.createElement(Btn,{onClick:submit},"Send to Coach")),
+    history.length>0&&React.createElement("div",{style:{marginTop:12}},
+      React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.text3,textTransform:"uppercase",letterSpacing:".1em",marginBottom:10}},"Previous Submissions"),
+      history.map((h,i)=>React.createElement("div",{key:i,style:{background:C.card,border:"1px solid "+C.border,borderRadius:8,padding:12,marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:13,fontWeight:600}},h.view_angle||"Side view"),
+          React.createElement("div",{style:{fontSize:11,color:C.text3}},new Date(h.created_at).toLocaleDateString())),
+        h.coach_feedback&&React.createElement(Tag,{color:C.green},"Feedback received")))));
+}
+
+// ── NUTRITION ──
+function NutritionTab({user}) {
+  const [tab,setTab]=useState("log");
+  const [carbs,setCarbs]=useState(""); const [protein,setProtein]=useState(""); const [fat,setFat]=useState(""); const [water,setWater]=useState(""); const [fuel,setFuel]=useState(""); const [notes,setNotes]=useState("");
+  const [plan,setPlan]=useState(null);
+
+  useEffect(()=>{
+    db("training_plans","GET",null,"?runner_name=eq."+encodeURIComponent(user.name)+"&order=created_at.desc&limit=1").then(r=>{if(r&&r[0]&&r[0].nutrition_plan)setPlan(r[0].nutrition_plan);});
+  },[]);
+
+  const totalCal = Math.round((parseFloat(carbs)||0)*4+(parseFloat(protein)||0)*4+(parseFloat(fat)||0)*9);
+
+  return React.createElement("div",null,
+    React.createElement(Tabs,{tabs:[{id:"log",label:"Daily Log"},{id:"plan",label:"Coach Plan"},{id:"race",label:"Race Fuel"}],active:tab,onChange:setTab}),
+    tab==="log"&&React.createElement(Card,{title:"Today's Nutrition"},
+      React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+        React.createElement(Fld,{label:"Carbs (g)"},React.createElement(Inp,{type:"number",placeholder:"300",value:carbs,onChange:setCarbs})),
+        React.createElement(Fld,{label:"Protein (g)"},React.createElement(Inp,{type:"number",placeholder:"120",value:protein,onChange:setProtein})),
+        React.createElement(Fld,{label:"Fat (g)"},React.createElement(Inp,{type:"number",placeholder:"60",value:fat,onChange:setFat})),
+        React.createElement(Fld,{label:"Water (L)"},React.createElement(Inp,{type:"number",placeholder:"2.5",step:"0.1",value:water,onChange:setWater}))),
+      totalCal>0&&React.createElement("div",{style:{background:C.bg3,borderRadius:8,padding:12,marginTop:8,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        React.createElement("div",{style:{fontSize:13,color:C.text2}},"Total calories"),
+        React.createElement("div",{style:{fontSize:18,fontWeight:700,color:C.accent}},totalCal+" kcal")),
+      React.createElement(Fld,{label:"Pre-run fuel"},React.createElement(Chips,{value:fuel,onChange:setFuel,options:["Nothing","Banana","Toast","Oatmeal","Energy bar","Sports drink"].map(l=>({label:l}))})),
+      React.createElement(Fld,{label:"Notes"},React.createElement("textarea",{value:notes,onChange:e=>setNotes(e.target.value),rows:2,placeholder:"Any issues or questions about nutrition...",style:{width:"100%",background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}})),
+      React.createElement(Btn,{onClick:()=>alert("Log saved!")},"Save Log")),
+    tab==="plan"&&React.createElement("div",null,
+      plan?React.createElement(Card,{title:"Nutrition Plan from Coach"},React.createElement("div",{style:{fontSize:13,color:C.text2,lineHeight:1.8,whiteSpace:"pre-wrap"}},plan))
+      :React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},React.createElement("div",{style:{fontSize:32,marginBottom:8}},"🥗"),React.createElement("div",{style:{fontSize:13}},"Your coach will add a nutrition plan soon."))),
+    tab==="race"&&React.createElement(Card,{title:"Race Day Fuel Guide"},
+      [{dist:"5K",fuel:"Water only, no carbs needed"},{dist:"10K",fuel:"1 gel at 5km if needed"},{dist:"Half Marathon",fuel:"2-3 gels, every 6-7km. 30-40g carbs/hr"},{dist:"Marathon",fuel:"5-7 gels, every 5km. 60-90g carbs/hr. Salt tablets"}]
+      .map(r=>React.createElement("div",{key:r.dist,style:{background:C.bg3,borderRadius:8,padding:12,marginBottom:8}},
+        React.createElement("div",{style:{fontSize:13,fontWeight:700,color:C.accent,marginBottom:4}},r.dist),
+        React.createElement("div",{style:{fontSize:13,color:C.text2}},r.fuel)))));
+}
+
+// ── PLANS ──
+function PlansTab({user}) {
+  const [plans,setPlans]=useState([]); const [loading,setLoading]=useState(true);
+  const [selected,setSelected]=useState(null); const [dayReport,setDayReport]=useState({});
+  const [submitting,setSubmitting]=useState(false);
+
+  useEffect(()=>{
+    db("training_plans","GET",null,"?runner_name=eq."+encodeURIComponent(user.name)+"&order=created_at.desc").then(r=>{setPlans(r||[]);setLoading(false);if(r&&r[0])setSelected(r[0]);});
+  },[]);
+
+  const parsePlan = (text) => {
+    if(!text)return[];
+    return text.split("\n").filter(l=>l.trim()).map((l,i)=>{
+      const colonIdx=l.indexOf(":");
+      const day=colonIdx>-1?l.slice(0,colonIdx).trim():"Day "+(i+1);
+      const content=colonIdx>-1?l.slice(colonIdx+1).trim():l;
+      const isRest=content.toLowerCase().includes("rest");
+      let intensity="easy";
+      if(content.toLowerCase().includes("tempo")||content.toLowerCase().includes("interval"))intensity="hard";
+      else if(content.toLowerCase().includes("long"))intensity="moderate";
+      return {day,content,isRest,intensity,index:i};
+    });
+  };
+
+  const submitDayReport = async (dayIndex) => {
+    const r=dayReport[dayIndex]||{};
+    setSubmitting(true);
+    await db("weekly_reports","POST",{runner_name:user.name,notes:"Day "+dayIndex+": "+JSON.stringify(r),km:parseFloat(r.km)||0,sessions:1,pain:r.pain||"No pain",motivation:parseInt(r.motivation)||3,status:"ok",alerts:""});
+    setSubmitting(false);
+    alert("Day report saved!");
+  };
+
+  if(loading)return React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},"Loading plans...");
+  if(!plans.length)return React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},React.createElement("div",{style:{fontSize:32,marginBottom:8}},"📅"),React.createElement("div",{style:{fontSize:13}},"No training plan yet. Your coach will assign one soon."));
+
+  const days=selected?parsePlan(selected.plan):[];
+
+  return React.createElement("div",null,
+    plans.length>1&&React.createElement("div",{style:{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,marginBottom:12}},
+      plans.map(p=>React.createElement("button",{key:p.id,onClick:()=>setSelected(p),style:{padding:"6px 14px",borderRadius:20,border:"1px solid "+(selected&&selected.id===p.id?C.accent:C.border),background:selected&&selected.id===p.id?C.accent:"transparent",color:selected&&selected.id===p.id?"#fff":C.text2,fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}},"Week of "+(p.week_start||"")))),
+    selected&&React.createElement("div",{style:{background:C.card,border:"1px solid rgba(192,57,43,.3)",borderRadius:14,padding:14,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+      React.createElement("div",null,
+        React.createElement("div",{style:{fontSize:12,color:C.text2,marginBottom:2}},"Current Plan"),
+        React.createElement("div",{style:{fontSize:15,fontWeight:700}},selected.intensity||"Base"))),
+    days.map(d=>React.createElement("div",{key:d.index,style:{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:16,marginBottom:10}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+        React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.accent}},d.day),
+        React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,background:d.isRest?"rgba(72,79,88,.2)":d.intensity==="hard"?"rgba(231,76,60,.15)":d.intensity==="moderate"?"rgba(243,156,18,.15)":"rgba(39,174,96,.15)",color:d.isRest?C.text3:d.intensity==="hard"?C.danger:d.intensity==="moderate"?C.warn:C.green}},d.isRest?"REST":d.intensity.toUpperCase())),
+      React.createElement("div",{style:{fontSize:13,color:C.text2,marginBottom:d.isRest?0:12}},d.content),
+      !d.isRest&&React.createElement("div",{style:{borderTop:"1px solid "+C.border,paddingTop:10}},
+        React.createElement("div",{style:{fontSize:11,fontWeight:700,color:C.text3,marginBottom:8}},"LOG THIS SESSION"),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}},
+          React.createElement(Fld,{label:"Distance (km)"},React.createElement(Inp,{type:"number",placeholder:"0",value:(dayReport[d.index]||{}).km||"",onChange:v=>setDayReport(prev=>({...prev,[d.index]:{...prev[d.index],km:v}}))})),
+          React.createElement(Fld,{label:"Motivation (1-5)"},React.createElement(Inp,{type:"number",placeholder:"3",min:"1",max:"5",value:(dayReport[d.index]||{}).motivation||"",onChange:v=>setDayReport(prev=>({...prev,[d.index]:{...prev[d.index],motivation:v}}))}))),
+        React.createElement(Fld,{label:"Pain"},
+          React.createElement(Chips,{value:(dayReport[d.index]||{}).pain||"",onChange:v=>setDayReport(prev=>({...prev,[d.index]:{...prev[d.index],pain:v}})),options:[{label:"No pain"},{label:"Mild pain",color:C.warn},{label:"Serious pain",color:C.danger}]})),
+        React.createElement(Btn,{onClick:()=>submitDayReport(d.index),sm:true,full:false,loading:submitting},"Save Session")))));
+}
+
+// ── STATISTICS ──
+function StatisticsTab({user}) {
+  const [reports,setReports]=useState([]); const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{
+    db("weekly_reports","GET",null,"?runner_name=eq."+encodeURIComponent(user.name)+"&order=created_at.desc&limit=12").then(r=>{setReports(r||[]);setLoading(false);});
+  },[]);
+
+  if(loading)return React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},"Loading...");
+  if(!reports.length)return React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},React.createElement("div",{style:{fontSize:32,marginBottom:8}},"📊"),React.createElement("div",{style:{fontSize:13}},"Submit your first weekly report to see statistics."));
+
+  const totalKm=reports.reduce((s,r)=>s+(r.km||0),0);
+  const avgKm=Math.round(totalKm/reports.length);
+  const avgMotivation=(reports.reduce((s,r)=>s+(r.motivation||0),0)/reports.length).toFixed(1);
+  const avgRhr=Math.round(reports.reduce((s,r)=>s+(r.resting_hr||0),0)/reports.filter(r=>r.resting_hr>0).length)||0;
+  const latestVo2=reports[0]&&reports[0].tempo_pace?calcVo2(reports[0].tempo_pace):0;
+
+  const maxKm=Math.max(...reports.map(r=>r.km||0));
+
+  return React.createElement("div",null,
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}},
+      [{l:"Total km logged",v:Math.round(totalKm)+"km",c:C.accent},{l:"Avg weekly km",v:avgKm+"km"},{l:"Avg motivation",v:avgMotivation+"/5",c:avgMotivation>=4?C.green:avgMotivation>=3?C.warn:C.danger},{l:"Est. VO₂max",v:latestVo2||"—",c:C.blue},{l:"Avg resting HR",v:avgRhr?avgRhr+" bpm":"—",c:avgRhr>65?C.warn:C.green},{l:"Reports filed",v:reports.length}]
+      .map(x=>React.createElement("div",{key:x.l,style:{background:C.card,border:"1px solid "+C.border,borderRadius:10,padding:12,textAlign:"center"}},
+        React.createElement("div",{style:{fontSize:22,fontWeight:700,color:x.c||C.text}},x.v),
+        React.createElement("div",{style:{fontSize:10,color:C.text3,marginTop:3}},x.l)))),
+    React.createElement(Card,{title:"Weekly Volume (km)"},
+      React.createElement("div",{style:{display:"flex",alignItems:"flex-end",gap:4,height:120,padding:"8px 0"}},
+        [...reports].reverse().map((r,i)=>React.createElement("div",{key:i,style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}},
+          React.createElement("div",{style:{width:"100%",background:r.km>avgKm?C.accent:"rgba(192,57,43,.4)",borderRadius:"4px 4px 0 0",height:maxKm?Math.max(4,(r.km||0)/maxKm*100)+"px":"4px",transition:"height .3s"}}),
+          React.createElement("div",{style:{fontSize:9,color:C.text3}},r.km||0))))),
+    React.createElement(Card,{title:"Recent Reports"},
+      reports.slice(0,5).map((r,i)=>{
+        const rec=calcRecovery(r);
+        return React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i<4?"1px solid "+C.border:"none"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:13,fontWeight:600}},new Date(r.created_at).toLocaleDateString()),
+            React.createElement("div",{style:{fontSize:11,color:C.text3,marginTop:2}},(r.km||0)+"km · "+(r.sessions||0)+" sessions")),
+          React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
+            React.createElement(Tag,{color:rec>=70?C.green:rec>=50?C.warn:C.danger},"Recovery: "+rec+"%"),
+            r.status!=="ok"&&React.createElement(Tag,{color:r.status==="danger"?C.danger:C.warn},r.status)));
+      })));
+}
+
+// ── COACH SEARCH ──
+function CoachTab({user}) {
+  const [tab,setTab]=useState("find");
+  const [query,setQuery]=useState(""); const [results,setResults]=useState([]);
+  const [myCoach,setMyCoach]=useState(null); const [messages,setMessages]=useState([]);
+  const [msgText,setMsgText]=useState(""); const [searching,setSearching]=useState(false);
+  const chatRef=useRef(null);
+
+  useEffect(()=>{
+    db("users","GET",null,"?id=eq."+encodeURIComponent(user.coach_id||"")+"&role=eq.coach&limit=1").then(r=>r&&r[0]&&setMyCoach(r[0]));
+    if(user.coach_id) loadMessages();
+  },[]);
 
   const loadMessages = () => {
-    db("messages","GET",null,`?runner_name=eq.${encodeURIComponent(runnerName)}&order=created_at.asc&limit=50`)
-      .then(r=>{ if(r) setMessages(r); setTimeout(()=>chatRef.current?.scrollTo(0,9999),100); });
+    db("messages","GET",null,"?runner_name=eq."+encodeURIComponent(user.name)+"&order=created_at.asc&limit=50").then(r=>{if(r)setMessages(r);setTimeout(()=>chatRef.current&&(chatRef.current.scrollTop=chatRef.current.scrollHeight),100);});
+  };
+
+  const search = async () => {
+    if(!query.trim())return;
+    setSearching(true);
+    const res=await db("users","GET",null,"?role=eq.coach&name=ilike."+encodeURIComponent("%"+query+"%"));
+    setResults(res||[]); setSearching(false);
+  };
+
+  const follow = async (coach) => {
+    await dbUpdate("users",{coach_id:coach.id},"?id=eq."+encodeURIComponent(user.id));
+    setMyCoach(coach); user.coach_id=coach.id;
+    localStorage.setItem("ir_user",JSON.stringify({...user,coach_id:coach.id}));
+    setTab("chat"); loadMessages();
+    alert("Now following "+coach.name+"!");
   };
 
   const sendMsg = async () => {
-    if (!msgText.trim()) return;
-    const t = msgText; setMsgText("");
-    await db("messages","POST",{runner_name:runnerName,from_coach:false,message:t});
+    if(!msgText.trim())return;
+    const t=msgText; setMsgText("");
+    await db("messages","POST",{runner_name:user.name,from_coach:false,message:t});
     loadMessages();
   };
 
-  const ini = runnerName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-  const recovery = lastReport ? calcRecovery(lastReport) : null;
+  return React.createElement("div",null,
+    React.createElement(Tabs,{tabs:[{id:"find",label:"Find Coach"},{id:"profile",label:"My Coach"},{id:"chat",label:"Chat"}],active:tab,onChange:setTab}),
+    tab==="find"&&React.createElement("div",null,
+      React.createElement(Card,{title:"Find Your Coach"},
+        React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
+          React.createElement(Inp,{placeholder:"Search by name or username...",value:query,onChange:setQuery,style:{flex:1}}),
+          React.createElement(Btn,{onClick:search,sm:true,full:false,loading:searching},"Search")),
+        results.length===0&&React.createElement("div",{style:{textAlign:"center",padding:20,color:C.text3,fontSize:13}},"Search for your coach by name"),
+        results.map(c=>React.createElement("div",{key:c.id,style:{background:C.bg3,borderRadius:10,padding:14,marginBottom:8,display:"flex",alignItems:"center",gap:12}},
+          React.createElement("div",{style:{width:44,height:44,borderRadius:"50%",background:"rgba(192,57,43,.2)",color:C.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,flexShrink:0}},c.name?c.name[0].toUpperCase():"C"),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{fontSize:14,fontWeight:700}},c.name),
+            React.createElement("div",{style:{fontSize:12,color:C.text3}},c.bio||"Running coach"),
+            c.speciality&&React.createElement(Tag,{color:C.blue},c.speciality)),
+          React.createElement(Btn,{onClick:()=>follow(c),sm:true,full:false},myCoach&&myCoach.id===c.id?"Following ✓":"Follow"))))),
+    tab==="profile"&&React.createElement("div",null,
+      myCoach?React.createElement(Card,null,
+        React.createElement("div",{style:{display:"flex",gap:14,alignItems:"flex-start",marginBottom:16}},
+          React.createElement("div",{style:{width:64,height:64,borderRadius:"50%",background:"rgba(192,57,43,.2)",color:C.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700,flexShrink:0}},myCoach.name?myCoach.name[0].toUpperCase():"C"),
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:18,fontWeight:700}},myCoach.name),
+            React.createElement("div",{style:{fontSize:13,color:C.text3,marginTop:2}},myCoach.bio||"Your coach"),
+            myCoach.speciality&&React.createElement(Tag,{color:C.blue},myCoach.speciality))),
+        React.createElement(Btn,{onClick:()=>setTab("chat")},"Open Chat"))
+      :React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},
+        React.createElement("div",{style:{fontSize:32,marginBottom:8}},"👤"),
+        React.createElement("div",{style:{fontSize:13,marginBottom:12}},"You haven't connected with a coach yet."),
+        React.createElement(Btn,{onClick:()=>setTab("find")},"Find a Coach"))),
+    tab==="chat"&&React.createElement(Card,{title:"Chat with Coach"},
+      !myCoach?React.createElement("div",{style:{textAlign:"center",padding:20,color:C.text3,fontSize:13}},"Connect with a coach first to chat."):
+      React.createElement("div",null,
+        React.createElement("div",{ref:chatRef,style:{display:"flex",flexDirection:"column",gap:8,maxHeight:300,overflowY:"auto",marginBottom:12}},
+          messages.length===0?React.createElement("div",{style:{textAlign:"center",padding:20,color:C.text3,fontSize:13}},"No messages yet. Say hello!"):
+          messages.map(m=>React.createElement("div",{key:m.id,style:{display:"flex",flexDirection:"column",alignItems:m.from_coach?"flex-start":"flex-end"}},
+            React.createElement("div",{style:{maxWidth:"80%",padding:"10px 14px",fontSize:13,lineHeight:1.5,background:m.from_coach?C.accent:C.bg3,color:"#fff",borderRadius:m.from_coach?"4px 14px 14px 14px":"14px 4px 14px 14px"}},m.message),
+            React.createElement("div",{style:{fontSize:10,color:C.text3,marginTop:3}},new Date(m.created_at).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}))))),
+        React.createElement("div",{style:{display:"flex",gap:8,alignItems:"flex-end"}},
+          React.createElement("textarea",{value:msgText,onChange:e=>setMsgText(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}},rows:1,placeholder:"Message your coach...",style:{flex:1,background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}),
+          React.createElement("button",{onClick:sendMsg,style:{width:40,height:40,borderRadius:"50%",background:C.accent,border:"none",color:"#fff",fontSize:18,cursor:"pointer",flexShrink:0}},"➤")))));
+}
 
-  const tabs = ["weekly","biomech","nutrition","strength","chat"];
-  const tabLabels = {weekly:"Weekly",biomech:"Biomech",nutrition:"Nutrition",strength:"Strength",chat:"Chat"};
+// ── RUNNER DASHBOARD ──
+function RunnerDashboard({user,onLogout}) {
+  const [tab,setTab]=useState("plans");
+  const [lastReport,setLastReport]=useState(null);
 
-  return (
-    <div>
-      {/* Profile hero */}
-      <div style={{ background:"linear-gradient(135deg,#1a1a2e,#0d1117)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:20,marginBottom:12,position:"relative",overflow:"hidden" }}>
-        <div style={{ display:"flex",alignItems:"flex-start",gap:14 }}>
-          <div style={{ width:72,height:72,borderRadius:"50%",background:"rgba(192,57,43,0.15)",border:"3px solid #c0392b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700,color:"#c0392b",flexShrink:0 }}>{ini}</div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontSize:20,fontWeight:700 }}>{runnerName}</div>
-            <div style={{ fontSize:13,color:"#8b949e",marginTop:2 }}>{profile?.training_category||"Runner"}</div>
-          </div>
-        </div>
-        <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:14 }}>
-          {[{val:lastReport?.km||"—",lbl:"km this week"},{val:lastReport?.sessions||"—",lbl:"sessions"},{val:recovery?`${recovery}%`:"—",lbl:"recovery"}].map(s=>(
-            <div key={s.lbl} style={{ background:"rgba(255,255,255,0.04)",borderRadius:8,padding:10,textAlign:"center" }}>
-              <div style={{ fontSize:20,fontWeight:700,color:"#c0392b" }}>{s.val}</div>
-              <div style={{ fontSize:10,color:"#484f58",marginTop:2 }}>{s.lbl}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+  useEffect(()=>{
+    db("weekly_reports","GET",null,"?runner_name=eq."+encodeURIComponent(user.name)+"&order=created_at.desc&limit=1").then(r=>r&&r[0]&&setLastReport(r[0]));
+  },[]);
 
-      {/* Tab bar */}
-      <div style={{ display:"flex",gap:2,background:"#21262d",borderRadius:8,padding:3,marginBottom:16 }}>
-        {tabs.map(t=>(
-          <button key={t} onClick={()=>setTab(t)} style={{ flex:1,padding:8,fontSize:11,fontWeight:600,border:"none",background:tab===t?"#1c2128":"transparent",color:tab===t?"#e6edf3":"#8b949e",cursor:"pointer",borderRadius:6 }}>{tabLabels[t]}</button>
-        ))}
-      </div>
+  const ini=user.name?user.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"U";
+  const rec=lastReport?calcRecovery(lastReport):null;
 
-      {tab==="weekly" && (
-        submitted ? (
-          <div style={{ textAlign:"center",padding:"60px 20px" }}>
-            <div style={{ width:72,height:72,borderRadius:"50%",background:"rgba(39,174,96,0.15)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",fontSize:32 }}>✓</div>
-            <div style={{ fontSize:20,fontWeight:700,marginBottom:8 }}>Report submitted!</div>
-            <div style={{ fontSize:14,color:"#8b949e",lineHeight:1.7 }}>Your coach received this week's report.</div>
-            <Btn onClick={()=>setSubmitted(false)}>New report</Btn>
-          </div>
-        ) : (
-          <div>
-            <WeeklyForm runnerName={runnerName} onSubmit={()=>setSubmitted(true)} />
-            {plan && (
-              <div style={{ marginTop:20 }}>
-                <div style={{ fontSize:10,fontWeight:700,color:"#484f58",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10 }}>Your Training Plan</div>
-                <Card>
-                  <div style={{ fontSize:13,fontWeight:700,color:"#c0392b",marginBottom:8 }}>Week of {plan.week_start||""} — {plan.intensity}</div>
-                  <div style={{ fontSize:13,color:"#8b949e",lineHeight:1.7,whiteSpace:"pre-wrap" }}>{plan.plan}</div>
-                </Card>
-              </div>
-            )}
-          </div>
-        )
-      )}
+  const tabs=[{id:"plans",label:"Plans"},{id:"stats",label:"Statistics"},{id:"biomech",label:"Biomech"},{id:"nutrition",label:"Nutrition"},{id:"coach",label:"Coach"},{id:"strategy",label:"Strategy"}];
 
-      {tab==="biomech" && (
-        <Card title="Upload Running Photo">
-          <Field label="Take a photo from the side or back while running">
-            <div style={{ background:"#161b22",border:"1px dashed rgba(255,255,255,0.1)",borderRadius:8,padding:24,textAlign:"center",cursor:"pointer" }}>
-              <div style={{ fontSize:28,marginBottom:8 }}>📷</div>
-              <div style={{ fontSize:13,color:"#8b949e" }}>Tap to upload photo</div>
-              <input type="file" accept="image/*" style={{ display:"none" }} />
-            </div>
-          </Field>
-          <Field label="View angle">
-            <Chips value="" onChange={()=>{}} options={["Side view","Back view","Front view"].map(l=>({label:l}))} />
-          </Field>
-          <Btn onClick={()=>alert("Photo sent to coach!")}>Send to Coach</Btn>
-        </Card>
-      )}
-
-      {tab==="nutrition" && (
-        <div>
-          <Card title="Today's Nutrition Log">
-            <Field label="Carbohydrates (g)"><Input type="number" placeholder="300" value="" onChange={()=>{}} /></Field>
-            <Field label="Protein (g)"><Input type="number" placeholder="120" value="" onChange={()=>{}} /></Field>
-            <Field label="Water (liters)"><Input type="number" placeholder="2.5" step="0.1" value="" onChange={()=>{}} /></Field>
-            <Field label="Pre-run fuel">
-              <Chips value="" onChange={()=>{}} options={["Nothing","Light snack","Full meal","Gel/Sports drink"].map(l=>({label:l}))} />
-            </Field>
-            <Btn onClick={()=>alert("Nutrition log saved!")}>Save Log</Btn>
-          </Card>
-          <div style={{ textAlign:"center",padding:"20px",color:"#484f58",fontSize:13 }}>Nutrition plan from coach will appear here.</div>
-        </div>
-      )}
-
-      {tab==="strength" && (
-        <div>
-          <Card title="This Week's Strength Work">
-            <Field label="Sessions completed"><Input type="number" placeholder="2" value="" onChange={()=>{}} /></Field>
-            <Field label="Focus area">
-              <Chips value="" onChange={()=>{}} options={["Core","Glutes","Legs","Upper body","Full body"].map(l=>({label:l}))} />
-            </Field>
-            <Field label="Notes"><textarea rows={2} placeholder="What exercises did you do?" style={{width:"100%",background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"11px 13px",fontSize:14,color:"#e6edf3",outline:"none",resize:"none"}} /></Field>
-            <Btn onClick={()=>alert("Saved!")}>Save</Btn>
-          </Card>
-        </div>
-      )}
-
-      {tab==="chat" && (
-        <Card title="Chat with Coach">
-          <div ref={chatRef} style={{ display:"flex",flexDirection:"column",gap:8,maxHeight:300,overflowY:"auto",marginBottom:12 }}>
-            {messages.length===0 ? (
-              <div style={{ textAlign:"center",padding:20,color:"#484f58",fontSize:13 }}>No messages yet. Say hello!</div>
-            ) : messages.map(m=>(
-              <div key={m.id} style={{ display:"flex",flexDirection:"column",alignItems:m.from_coach?"flex-start":"flex-end" }}>
-                <div style={{ maxWidth:"80%",padding:"10px 14px",borderRadius:14,fontSize:13,lineHeight:1.5,background:m.from_coach?"#c0392b":"#21262d",color:"#fff",borderRadius:m.from_coach?"4px 14px 14px 14px":"14px 4px 14px 14px" }}>{m.message}</div>
-                <div style={{ fontSize:10,color:"#484f58",marginTop:3 }}>{new Date(m.created_at).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display:"flex",gap:8,alignItems:"flex-end" }}>
-            <textarea value={msgText} onChange={e=>setMsgText(e.target.value)} rows={1} placeholder="Message your coach..."
-              onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}}
-              style={{ flex:1,background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"10px 12px",fontSize:14,color:"#e6edf3",outline:"none",resize:"none" }} />
-            <button onClick={sendMsg} style={{ width:40,height:40,borderRadius:"50%",background:"#c0392b",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>➤</button>
-          </div>
-        </Card>
-      )}
-    </div>
-  );
+  return React.createElement("div",null,
+    React.createElement("div",{style:{background:"linear-gradient(135deg,#1a1a2e,"+C.bg+")",border:"1px solid "+C.border,borderRadius:14,padding:20,marginBottom:12,position:"relative",overflow:"hidden"}},
+      React.createElement("div",{style:{position:"absolute",top:-40,right:-40,width:150,height:150,background:"radial-gradient(circle,rgba(192,57,43,.1),transparent 70%)",pointerEvents:"none"}}),
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:14,marginBottom:14}},
+        React.createElement("div",{style:{width:60,height:60,borderRadius:"50%",background:"rgba(192,57,43,.15)",border:"2px solid "+C.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:700,color:C.accent}},ini),
+        React.createElement("div",{style:{flex:1}},
+          React.createElement("div",{style:{fontSize:18,fontWeight:700}},user.name),
+          React.createElement("div",{style:{fontSize:12,color:C.text3,marginTop:2}},user.email)),
+        React.createElement("button",{onClick:onLogout,style:{background:"none",border:"none",color:C.text3,fontSize:12,cursor:"pointer",padding:4}},"Logout")),
+      React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}},
+        [{v:lastReport?lastReport.km+"km":"—",l:"This week"},{v:lastReport?lastReport.sessions:"—",l:"Sessions"},{v:rec?rec+"%":"—",l:"Recovery",c:rec>=70?C.green:rec>=50?C.warn:C.danger}]
+        .map(x=>React.createElement("div",{key:x.l,style:{background:"rgba(255,255,255,.04)",borderRadius:8,padding:10,textAlign:"center"}},
+          React.createElement("div",{style:{fontSize:18,fontWeight:700,color:x.c||C.accent}},x.v),
+          React.createElement("div",{style:{fontSize:10,color:C.text3,marginTop:2}},x.l))))),
+    React.createElement("div",{style:{overflowX:"auto",marginBottom:16}},
+      React.createElement("div",{style:{display:"flex",gap:2,background:C.bg3,borderRadius:8,padding:3,minWidth:"max-content"}},
+        tabs.map(t=>React.createElement("button",{key:t.id,onClick:()=>setTab(t.id),style:{padding:"8px 12px",fontSize:11,fontWeight:600,border:"none",background:tab===t.id?C.card:"transparent",color:tab===t.id?C.text:C.text3,cursor:"pointer",borderRadius:6,whiteSpace:"nowrap"}},t.label)))),
+    tab==="plans"&&React.createElement(PlansTab,{user}),
+    tab==="stats"&&React.createElement(StatisticsTab,{user}),
+    tab==="biomech"&&React.createElement(BiomechanicsTab,{user}),
+    tab==="nutrition"&&React.createElement(NutritionTab,{user}),
+    tab==="coach"&&React.createElement(CoachTab,{user}),
+    tab==="strategy"&&React.createElement(StrategyTab,null));
 }
 
 // ── COACH PANEL ──
-function CoachPanel() {
-  const [unlocked, setUnlocked] = useState(false);
-  const [pass, setPass] = useState("");
-  const [err, setErr] = useState("");
-  const [reports, setReports] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [selected, setSelected] = useState(null);
-  const [tab, setTab] = useState("athletes");
-  const [planRunner, setPlanRunner] = useState("");
-  const [planWeek, setPlanWeek] = useState("");
-  const [planIntensity, setPlanIntensity] = useState("");
-  const [planText, setPlanText] = useState("");
-  const [chatMsgs, setChatMsgs] = useState([]);
-  const [coachMsg, setCoachMsg] = useState("");
+function CoachPanel({user,onLogout}) {
+  const [unlocked,setUnlocked]=useState(false);
+  const [pass,setPass]=useState(""); const [err,setErr]=useState("");
+  const [tab,setTab]=useState("athletes");
+  const [reports,setReports]=useState([]); const [filter,setFilter]=useState("all");
+  const [selected,setSelected]=useState(null);
+  const [planRunner,setPlanRunner]=useState(""); const [planWeek,setPlanWeek]=useState("");
+  const [planInt,setPlanInt]=useState(""); const [planText,setPlanText]=useState("");
+  const [chatMsgs,setChatMsgs]=useState([]); const [coachMsg,setCoachMsg]=useState("");
+  const [coachProfile,setCoachProfile]=useState({bio:"",speciality:""});
+  const [savingProfile,setSavingProfile]=useState(false);
 
-  useEffect(() => { if (unlocked) loadReports(); }, [unlocked]);
+  useEffect(()=>{ if(unlocked)loadData(); },[unlocked]);
 
-  const loadReports = async () => {
-    const r = await db("weekly_reports","GET",null,"?order=created_at.desc&limit=100");
-    if (r) { const latest={}; r.forEach(x=>{if(!latest[x.runner_name])latest[x.runner_name]=x;}); setReports(Object.values(latest)); }
+  const loadData = async () => {
+    const r=await db("weekly_reports","GET",null,"?order=created_at.desc&limit=100");
+    if(r){const latest={};r.forEach(x=>{if(!latest[x.runner_name])latest[x.runner_name]=x;});setReports(Object.values(latest));}
   };
 
-  useEffect(() => {
-    if (selected) {
-      db("messages","GET",null,`?runner_name=eq.${encodeURIComponent(selected.runner_name)}&order=created_at.asc&limit=50`).then(r=>r&&setChatMsgs(r));
-    }
-  }, [selected]);
-
-  const savePlan = async () => {
-    if (!planRunner || !planText) { alert("Select athlete and write plan"); return; }
-    await db("training_plans","POST",{runner_name:planRunner,week_start:planWeek||null,plan:planText,intensity:planIntensity||"Base"});
-    alert(`Plan saved for ${planRunner}!`);
+  const openRunner = async (r) => {
+    setSelected(r);
+    const msgs=await db("messages","GET",null,"?runner_name=eq."+encodeURIComponent(r.runner_name)+"&order=created_at.asc&limit=50");
+    setChatMsgs(msgs||[]);
   };
 
   const sendCoachMsg = async () => {
-    if (!coachMsg.trim() || !selected) return;
-    const t = coachMsg; setCoachMsg("");
+    if(!coachMsg.trim()||!selected)return;
+    const t=coachMsg;setCoachMsg("");
     await db("messages","POST",{runner_name:selected.runner_name,from_coach:true,message:t});
-    db("messages","GET",null,`?runner_name=eq.${encodeURIComponent(selected.runner_name)}&order=created_at.asc&limit=50`).then(r=>r&&setChatMsgs(r));
+    const msgs=await db("messages","GET",null,"?runner_name=eq."+encodeURIComponent(selected.runner_name)+"&order=created_at.asc&limit=50");
+    setChatMsgs(msgs||[]);
   };
 
-  const filtered = filter==="all" ? reports : reports.filter(r=>r.status===filter);
-  const colors = ["#16a34a","#0891b2","#7c3aed","#b45309","#be185d","#0f766e","#1d4ed8","#b91c1c"];
+  const savePlan = async () => {
+    if(!planRunner||!planText){alert("Select athlete and write plan");return;}
+    await db("training_plans","POST",{runner_name:planRunner,week_start:planWeek||null,plan:planText,intensity:planInt||"Base"});
+    alert("Plan saved for "+planRunner+"!");
+  };
 
-  if (!unlocked) return (
-    <div style={{ minHeight:"80vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:40,textAlign:"center" }}>
-      <div style={{ fontSize:44,marginBottom:20 }}>🔒</div>
-      <div style={{ fontSize:22,fontWeight:700,marginBottom:6 }}>Coach Panel</div>
-      <div style={{ fontSize:14,color:"#8b949e",marginBottom:32 }}>Enter your password</div>
-      <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(pass===COACH_PASS?(setUnlocked(true),setErr("")):(setErr("Incorrect password"),setPass("")))}
-        placeholder="••••••" maxLength={12}
-        style={{ width:"100%",maxWidth:260,background:"#1c2128",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:14,fontSize:20,color:"#e6edf3",outline:"none",textAlign:"center",letterSpacing:8,marginBottom:12 }} />
-      <Btn onClick={()=>{ if(pass===COACH_PASS){setUnlocked(true);setErr("");}else{setErr("Incorrect password");setPass("");} }}>Enter</Btn>
-      {err && <div style={{ color:"#f87171",fontSize:13,marginTop:8 }}>{err}</div>}
-    </div>
-  );
+  const saveProfile = async () => {
+    setSavingProfile(true);
+    await dbUpdate("users",{bio:coachProfile.bio,speciality:coachProfile.speciality,role:"coach"},"?id=eq."+encodeURIComponent(user.id));
+    setSavingProfile(false); alert("Profile updated!");
+  };
 
-  const dangers = reports.filter(r=>r.status==="danger").length;
-  const warns = reports.filter(r=>r.status==="warn").length;
+  const filtered=filter==="all"?reports:reports.filter(r=>r.status===filter);
+  const colors=["#16a34a","#0891b2","#7c3aed","#b45309","#be185d","#0f766e","#1d4ed8","#b91c1c"];
 
-  return (
-    <div>
-      {/* Stats */}
-      <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16 }}>
-        {[{val:reports.length,lbl:"Reports",c:"#27ae60"},{val:warns+dangers,lbl:"Attention",c:"#f39c12"},{val:dangers,lbl:"Injury",c:"#e74c3c"}].map(s=>(
-          <div key={s.lbl} style={{ background:"#1c2128",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"14px 10px",textAlign:"center" }}>
-            <div style={{ fontSize:24,fontWeight:700,color:s.c }}>{s.val}</div>
-            <div style={{ fontSize:10,color:"#484f58",marginTop:3 }}>{s.lbl}</div>
-          </div>
-        ))}
-      </div>
+  if(!unlocked)return React.createElement("div",{style:{minHeight:"80vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:40,textAlign:"center"}},
+    React.createElement("div",{style:{fontSize:44,marginBottom:20}},"🔒"),
+    React.createElement("div",{style:{fontSize:22,fontWeight:700,marginBottom:6}},"Coach Panel"),
+    React.createElement("div",{style:{fontSize:14,color:C.text2,marginBottom:32}},"Enter your password"),
+    React.createElement("input",{type:"password",value:pass,onChange:e=>setPass(e.target.value),onKeyDown:e=>e.key==="Enter"&&(pass===COACH_PASS?(setUnlocked(true),setErr("")):(setErr("Wrong password"),setPass(""))),placeholder:"••••••",style:{width:"100%",maxWidth:260,background:C.card,border:"1px solid "+C.border,borderRadius:8,padding:14,fontSize:20,color:C.text,outline:"none",textAlign:"center",letterSpacing:8,marginBottom:12}}),
+    React.createElement(Btn,{onClick:()=>{if(pass===COACH_PASS){setUnlocked(true);setErr("");}else{setErr("Wrong password");setPass("");}}},  "Enter"),
+    err&&React.createElement("div",{style:{color:C.danger,fontSize:13,marginTop:8}},err));
 
-      {/* Tabs */}
-      <div style={{ display:"flex",gap:2,background:"#21262d",borderRadius:8,padding:3,marginBottom:16 }}>
-        {["athletes","plans","alerts"].map(t=>(
-          <button key={t} onClick={()=>setTab(t)} style={{ flex:1,padding:8,fontSize:12,fontWeight:600,border:"none",background:tab===t?"#1c2128":"transparent",color:tab===t?"#e6edf3":"#8b949e",cursor:"pointer",borderRadius:6,textTransform:"capitalize" }}>{t}</button>
-        ))}
-      </div>
+  const dangers=reports.filter(r=>r.status==="danger").length;
+  const warns=reports.filter(r=>r.status==="warn").length;
 
-      {tab==="athletes" && (
-        <div>
-          <div style={{ display:"flex",gap:6,overflowX:"auto",paddingBottom:4,marginBottom:14 }}>
-            {["all","danger","warn","ok"].map(f=>(
-              <button key={f} onClick={()=>setFilter(f)} style={{ padding:"6px 14px",borderRadius:20,border:`1px solid ${filter===f?"#c0392b":"rgba(255,255,255,0.08)"}`,background:filter===f?"#c0392b":"#1c2128",color:filter===f?"#fff":"#8b949e",fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap" }}>
-                {f==="all"?"All":f==="danger"?"Injury":f==="warn"?"Follow up":"Healthy"}
-              </button>
-            ))}
-          </div>
-          {filtered.length===0 ? (
-            <div style={{ textAlign:"center",padding:40,color:"#484f58" }}>
-              <div style={{ fontSize:36,marginBottom:10 }}>📋</div>
-              <p style={{ fontSize:13 }}>No reports yet.</p>
-            </div>
-          ) : filtered.map((r,i)=>{
-            const ini=r.runner_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-            const col=colors[i%colors.length];
-            const dotCol=r.status==="danger"?"#e74c3c":r.status==="warn"?"#f39c12":"#27ae60";
-            const ago=Math.round((Date.now()-new Date(r.created_at))/60000);
-            const agoStr=ago<60?`${ago}m ago`:ago<1440?`${Math.round(ago/60)}h ago`:`${Math.round(ago/1440)}d ago`;
-            const rec=calcRecovery(r);
-            return (
-              <div key={r.runner_name} onClick={()=>setSelected(r)} style={{ background:"#1c2128",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:12,cursor:"pointer" }}>
-                <div style={{ width:42,height:42,borderRadius:"50%",background:`${col}22`,color:col,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,flexShrink:0 }}>{ini}</div>
-                <div style={{ flex:1,minWidth:0 }}>
-                  <div style={{ fontSize:14,fontWeight:700 }}>{r.runner_name}</div>
-                  <div style={{ fontSize:12,color:"#8b949e",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{r.km}km · {r.sessions} sessions · Recovery: {rec}% · {agoStr}</div>
-                  <div style={{ display:"flex",gap:5,marginTop:6,flexWrap:"wrap" }}>
-                    {r.alerts ? r.alerts.split(",").map(a=>(
-                      <span key={a} style={{ fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:r.status==="danger"?"rgba(231,76,60,0.15)":"rgba(243,156,18,0.15)",color:r.status==="danger"?"#e74c3c":"#f39c12" }}>{a.trim()}</span>
-                    )) : <span style={{ fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:"rgba(39,174,96,0.15)",color:"#27ae60" }}>Healthy</span>}
-                  </div>
-                </div>
-                <div style={{ width:8,height:8,borderRadius:"50%",background:dotCol,flexShrink:0 }} />
-              </div>
-            );
-          })}
+  return React.createElement("div",null,
+    React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
+      React.createElement("div",{style:{fontSize:16,fontWeight:700}},"Coach Panel"),
+      React.createElement("button",{onClick:onLogout,style:{background:"none",border:"none",color:C.text3,fontSize:12,cursor:"pointer"}},"Logout")),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}},
+      [{v:reports.length,l:"Reports",c:C.green},{v:warns+dangers,l:"Attention",c:C.warn},{v:dangers,l:"Injury",c:C.danger}]
+      .map(x=>React.createElement("div",{key:x.l,style:{background:C.card,border:"1px solid "+C.border,borderRadius:8,padding:"14px 10px",textAlign:"center"}},
+        React.createElement("div",{style:{fontSize:24,fontWeight:700,color:x.c}},x.v),
+        React.createElement("div",{style:{fontSize:10,color:C.text3,marginTop:3}},x.l)))),
+    React.createElement(Tabs,{tabs:[{id:"athletes",label:"Athletes"},{id:"plans",label:"Plans"},{id:"alerts",label:"Alerts"},{id:"profile",label:"My Profile"}],active:tab,onChange:setTab}),
 
-          {/* Detail modal */}
-          {selected && (
-            <div onClick={e=>e.target===e.currentTarget&&setSelected(null)} style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"flex-end" }}>
-              <div style={{ background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"14px 14px 0 0",width:"100%",maxHeight:"90vh",overflowY:"auto",padding:20 }}>
-                <div style={{ width:32,height:3,background:"rgba(255,255,255,0.1)",borderRadius:2,margin:"0 auto 18px" }} />
-                <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:18 }}>
-                  <div style={{ width:46,height:46,borderRadius:"50%",background:"rgba(8,145,178,0.15)",color:"#0891b2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700 }}>
-                    {selected.runner_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
-                  </div>
-                  <div>
-                    <div style={{ fontSize:16,fontWeight:700 }}>{selected.runner_name}</div>
-                    <div style={{ fontSize:12,color:"#8b949e" }}>{new Date(selected.created_at).toLocaleDateString("en-GB")} · Recovery: {calcRecovery(selected)}%</div>
-                  </div>
-                  <button onClick={()=>setSelected(null)} style={{ marginLeft:"auto",background:"#21262d",border:"none",color:"#8b949e",width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:14 }}>✕</button>
-                </div>
+    tab==="athletes"&&React.createElement("div",null,
+      React.createElement("div",{style:{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,marginBottom:12}},
+        ["all","danger","warn","ok"].map(f=>React.createElement("button",{key:f,onClick:()=>setFilter(f),style:{padding:"6px 14px",borderRadius:20,border:"1px solid "+(filter===f?C.accent:C.border),background:filter===f?C.accent:"transparent",color:filter===f?"#fff":C.text2,fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}},f==="all"?"All":f==="danger"?"Injury":f==="warn"?"Follow up":"Healthy"))),
+      filtered.length===0?React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},React.createElement("div",{style:{fontSize:32,marginBottom:8}},"📋"),React.createElement("div",{style:{fontSize:13}},"No reports yet.")):
+      filtered.map((r,i)=>{
+        const ini=r.runner_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+        const col=colors[i%colors.length]; const rec=calcRecovery(r);
+        const dotCol=r.status==="danger"?C.danger:r.status==="warn"?C.warn:C.green;
+        const ago=Math.round((Date.now()-new Date(r.created_at))/60000);
+        const agoStr=ago<60?ago+"m ago":ago<1440?Math.round(ago/60)+"h ago":Math.round(ago/1440)+"d ago";
+        return React.createElement("div",{key:r.runner_name,onClick:()=>openRunner(r),style:{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}},
+          React.createElement("div",{style:{width:42,height:42,borderRadius:"50%",background:col+"22",color:col,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,flexShrink:0}},ini),
+          React.createElement("div",{style:{flex:1,minWidth:0}},
+            React.createElement("div",{style:{fontSize:14,fontWeight:700}},r.runner_name),
+            React.createElement("div",{style:{fontSize:12,color:C.text2,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},(r.km||0)+"km · "+(r.sessions||0)+" sessions · Recovery: "+rec+"% · "+agoStr),
+            React.createElement("div",{style:{display:"flex",gap:5,marginTop:5,flexWrap:"wrap"}},
+              r.alerts?r.alerts.split(",").map(a=>React.createElement(Tag,{key:a,color:r.status==="danger"?C.danger:C.warn},a.trim())):React.createElement(Tag,{color:C.green},"Healthy"))),
+          React.createElement("div",{style:{width:8,height:8,borderRadius:"50%",background:dotCol,flexShrink:0}}));
+      }),
+      selected&&React.createElement("div",{onClick:e=>e.target===e.currentTarget&&setSelected(null),style:{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:200,display:"flex",alignItems:"flex-end"}},
+        React.createElement("div",{style:{background:C.bg2,border:"1px solid "+C.border,borderRadius:"14px 14px 0 0",width:"100%",maxHeight:"90vh",overflowY:"auto",padding:20}},
+          React.createElement("div",{style:{width:32,height:3,background:C.border,borderRadius:2,margin:"0 auto 18px"}}),
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:16}},
+            React.createElement("div",{style:{width:46,height:46,borderRadius:"50%",background:"rgba(8,145,178,.15)",color:"#0891b2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700}},selected.runner_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()),
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:16,fontWeight:700}},selected.runner_name),
+              React.createElement("div",{style:{fontSize:12,color:C.text2}},"Recovery: "+calcRecovery(selected)+"% · "+new Date(selected.created_at).toLocaleDateString())),
+            React.createElement("button",{onClick:()=>setSelected(null),style:{marginLeft:"auto",background:C.bg3,border:"none",color:C.text2,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:14}},"✕")),
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}},
+            [{l:"Weekly km",v:(selected.km||"—")+" km",c:C.green},{l:"Sessions",v:selected.sessions||"—"},{l:"Long run",v:(selected.long_run||"—")+" km"},{l:"Resting HR",v:(selected.resting_hr||"—")+" bpm",c:selected.resting_hr>65?C.warn:null},{l:"Sleep",v:(selected.sleep_quality||"—")+(selected.sleep_hrs?" / "+selected.sleep_hrs+"h":"")},{l:"Motivation",v:(selected.motivation||"—")+"/5",c:selected.motivation<=2?C.warn:null},{l:"Stress",v:selected.stress||"—"},{l:"Energy",v:selected.energy||"—"}]
+            .map(x=>React.createElement("div",{key:x.l,style:{background:C.bg3,borderRadius:8,padding:10}},
+              React.createElement("div",{style:{fontSize:10,color:C.text3,marginBottom:3}},x.l),
+              React.createElement("div",{style:{fontSize:14,fontWeight:700,color:x.c||C.text}},x.v)))),
+          selected.notes&&React.createElement("div",{style:{marginBottom:12}},
+            React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:6}},"Notes"),
+            React.createElement("div",{style:{fontSize:13,color:C.text2,background:C.bg3,borderRadius:8,padding:12,lineHeight:1.7}},selected.notes)),
+          React.createElement("div",{style:{borderTop:"1px solid "+C.border,paddingTop:12,marginTop:4}}),
+          React.createElement("div",{style:{fontSize:10,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}},"Chat"),
+          React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8,maxHeight:200,overflowY:"auto",marginBottom:10}},
+            chatMsgs.length===0?React.createElement("div",{style:{color:C.text3,fontSize:13,textAlign:"center",padding:12}},"No messages yet."):
+            chatMsgs.map(m=>React.createElement("div",{key:m.id,style:{display:"flex",flexDirection:"column",alignItems:m.from_coach?"flex-start":"flex-end"}},
+              React.createElement("div",{style:{maxWidth:"80%",padding:"8px 12px",fontSize:13,background:m.from_coach?C.accent:C.bg3,color:"#fff",borderRadius:m.from_coach?"4px 12px 12px 12px":"12px 4px 12px 12px"}},m.message)))),
+          React.createElement("div",{style:{display:"flex",gap:8}},
+            React.createElement("textarea",{value:coachMsg,onChange:e=>setCoachMsg(e.target.value),rows:1,placeholder:"Message "+selected.runner_name+"...",style:{flex:1,background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}),
+            React.createElement("button",{onClick:sendCoachMsg,style:{width:40,height:40,borderRadius:"50%",background:C.accent,border:"none",color:"#fff",fontSize:18,cursor:"pointer",flexShrink:0}},"➤"))))),
 
-                {selected.pain==="Serious pain"&&<div style={{ background:"rgba(231,76,60,0.1)",border:"1px solid rgba(231,76,60,0.3)",borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:13,color:"#e74c3c" }}>⚠ Serious pain: {selected.pain_location||"unknown"}</div>}
-                {selected.resting_hr>65&&<div style={{ background:"rgba(243,156,18,0.1)",border:"1px solid rgba(243,156,18,0.3)",borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:13,color:"#f39c12" }}>High resting HR: {selected.resting_hr} bpm</div>}
+    tab==="plans"&&React.createElement(Card,{title:"Write Training Plan"},
+      React.createElement(Fld,{label:"Athlete"},
+        React.createElement("select",{value:planRunner,onChange:e=>setPlanRunner(e.target.value),style:{width:"100%",background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"11px 13px",fontSize:14,color:C.text,outline:"none"}},
+          React.createElement("option",{value:""},"-- Select athlete --"),
+          reports.map(r=>React.createElement("option",{key:r.runner_name,value:r.runner_name},r.runner_name)))),
+      React.createElement(Fld,{label:"Week starting"},React.createElement(Inp,{type:"date",value:planWeek,onChange:setPlanWeek})),
+      React.createElement(Fld,{label:"Intensity"},React.createElement(Chips,{value:planInt,onChange:setPlanInt,options:[{label:"Recovery",color:C.green},{label:"Base"},{label:"Build",color:C.warn},{label:"Peak",color:C.danger}]})),
+      React.createElement(Fld,{label:"Training Plan (one day per line)"},
+        React.createElement("textarea",{value:planText,onChange:e=>setPlanText(e.target.value),rows:10,placeholder:"Monday: Easy 8km @ Z2\nTuesday: Rest\nWednesday: Tempo 6km\nThursday: Easy 6km\nFriday: Rest\nSaturday: Long run 18km\nSunday: Recovery 5km",style:{width:"100%",background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"11px 13px",fontSize:13,color:C.text,outline:"none",resize:"none",lineHeight:1.7}})),
+      React.createElement(Btn,{onClick:savePlan},"Save Plan")),
 
-                <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14 }}>
-                  {[{l:"Weekly volume",v:`${selected.km} km`,c:"#27ae60"},{l:"Sessions",v:selected.sessions},{l:"Long run",v:`${selected.long_run||"—"} km`},{l:"Resting HR",v:`${selected.resting_hr||"—"} bpm`,c:selected.resting_hr>65?"#f39c12":null},{l:"Sleep",v:`${selected.sleep_quality||"—"}${selected.sleep_hrs?` / ${selected.sleep_hrs}h`:""}`},{l:"Motivation",v:`${selected.motivation||"—"}/5`,c:selected.motivation<=2?"#f39c12":null},{l:"Stress",v:selected.stress||"—"},{l:"Energy",v:selected.energy||"—"}].map(x=>(
-                    <div key={x.l} style={{ background:"#21262d",borderRadius:8,padding:10 }}>
-                      <div style={{ fontSize:10,color:"#484f58",marginBottom:3 }}>{x.l}</div>
-                      <div style={{ fontSize:15,fontWeight:700,color:x.c||"#e6edf3" }}>{x.v}</div>
-                    </div>
-                  ))}
-                </div>
+    tab==="alerts"&&React.createElement("div",null,
+      reports.filter(r=>r.status!=="ok").length===0?React.createElement("div",{style:{textAlign:"center",padding:40,color:C.text3}},React.createElement("div",{style:{fontSize:32,marginBottom:8}},"✅"),React.createElement("div",{style:{fontSize:13}},"No active alerts!")):
+      reports.filter(r=>r.status!=="ok").map(r=>React.createElement("div",{key:r.runner_name,style:{background:r.status==="danger"?"rgba(231,76,60,.1)":"rgba(243,156,18,.1)",border:"1px solid "+(r.status==="danger"?"rgba(231,76,60,.3)":"rgba(243,156,18,.3)"),borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:13,color:r.status==="danger"?C.danger:C.warn}},
+        React.createElement("strong",null,r.runner_name)," — ",r.alerts,
+        React.createElement("div",{style:{fontSize:11,marginTop:4,opacity:.7}},new Date(r.created_at).toLocaleDateString())))),
 
-                {(selected.pct_easy||selected.pct_mod||selected.pct_hard) && (
-                  <div>
-                    <div style={{ fontSize:10,fontWeight:700,color:"#484f58",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8 }}>Training distribution</div>
-                    {[{l:"Easy",v:selected.pct_easy||0,c:"#27ae60"},{l:"Moderate",v:selected.pct_mod||0,c:"#f39c12"},{l:"Hard",v:selected.pct_hard||0,c:"#e74c3c"}].map(x=>(
-                      <div key={x.l} style={{ marginBottom:10 }}>
-                        <div style={{ display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:5 }}><span>{x.l}</span><span style={{ color:x.c }}>{x.v}%</span></div>
-                        <div style={{ height:5,background:"#21262d",borderRadius:3,overflow:"hidden" }}><div style={{ height:"100%",width:`${x.v}%`,background:x.c,borderRadius:3 }} /></div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {selected.notes && <div style={{ marginTop:8 }}><div style={{ fontSize:10,fontWeight:700,color:"#484f58",textTransform:"uppercase",marginBottom:6 }}>Notes</div><div style={{ fontSize:13,color:"#8b949e",background:"#21262d",borderRadius:8,padding:12,lineHeight:1.7 }}>{selected.notes}</div></div>}
-
-                <hr style={{ border:"none",borderTop:"1px solid rgba(255,255,255,0.08)",margin:"16px 0" }} />
-                <div style={{ fontSize:10,fontWeight:700,color:"#484f58",textTransform:"uppercase",marginBottom:10 }}>Chat with {selected.runner_name}</div>
-                <div style={{ display:"flex",flexDirection:"column",gap:8,maxHeight:200,overflowY:"auto",marginBottom:12 }}>
-                  {chatMsgs.length===0 ? <div style={{ color:"#484f58",fontSize:13,textAlign:"center",padding:16 }}>No messages yet.</div>
-                  : chatMsgs.map(m=>(
-                    <div key={m.id} style={{ display:"flex",flexDirection:"column",alignItems:m.from_coach?"flex-start":"flex-end" }}>
-                      <div style={{ maxWidth:"80%",padding:"10px 14px",fontSize:13,lineHeight:1.5,background:m.from_coach?"#c0392b":"#21262d",color:"#fff",borderRadius:m.from_coach?"4px 14px 14px 14px":"14px 4px 14px 14px" }}>{m.message}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display:"flex",gap:8,alignItems:"flex-end" }}>
-                  <textarea value={coachMsg} onChange={e=>setCoachMsg(e.target.value)} rows={1} placeholder={`Message ${selected.runner_name}...`}
-                    style={{ flex:1,background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"10px 12px",fontSize:14,color:"#e6edf3",outline:"none",resize:"none" }} />
-                  <button onClick={sendCoachMsg} style={{ width:40,height:40,borderRadius:"50%",background:"#c0392b",border:"none",color:"#fff",fontSize:18,cursor:"pointer",flexShrink:0 }}>➤</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab==="plans" && (
-        <Card title="Write Training Plan">
-          <Field label="Select Athlete">
-            <select value={planRunner} onChange={e=>setPlanRunner(e.target.value)} style={{ width:"100%",background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"11px 13px",fontSize:14,color:"#e6edf3",outline:"none" }}>
-              <option value="">-- Select athlete --</option>
-              {reports.map(r=><option key={r.runner_name} value={r.runner_name}>{r.runner_name}</option>)}
-            </select>
-          </Field>
-          <Field label="Week starting"><Input type="date" value={planWeek} onChange={setPlanWeek} /></Field>
-          <Field label="Intensity">
-            <Chips value={planIntensity} onChange={setPlanIntensity} options={[{label:"Recovery",color:"#27ae60"},{label:"Base"},{label:"Build",color:"#f39c12"},{label:"Peak",color:"#e74c3c"}]} />
-          </Field>
-          <Field label="Training Plan">
-            <textarea value={planText} onChange={e=>setPlanText(e.target.value)} rows={8}
-              placeholder={"Monday: Easy 8km @ Z2\nTuesday: Rest\nWednesday: Tempo 6km @ LT\nThursday: Easy 6km\nFriday: Rest\nSaturday: Long run 18km @ Z2\nSunday: Recovery 5km"}
-              style={{ width:"100%",background:"#161b22",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"11px 13px",fontSize:13,color:"#e6edf3",outline:"none",resize:"none",lineHeight:1.7 }} />
-          </Field>
-          <Btn onClick={savePlan}>Save Plan</Btn>
-        </Card>
-      )}
-
-      {tab==="alerts" && (
-        <div>
-          {reports.filter(r=>r.status!=="ok").length===0 ? (
-            <div style={{ textAlign:"center",padding:40,color:"#484f58" }}><div style={{ fontSize:32,marginBottom:8 }}>✅</div><p style={{ fontSize:13 }}>No active alerts!</p></div>
-          ) : reports.filter(r=>r.status!=="ok").map(r=>(
-            <div key={r.runner_name} style={{ background:r.status==="danger"?"rgba(231,76,60,0.1)":"rgba(243,156,18,0.1)",border:`1px solid ${r.status==="danger"?"rgba(231,76,60,0.3)":"rgba(243,156,18,0.3)"}`,borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:13,color:r.status==="danger"?"#e74c3c":"#f39c12" }}>
-              <strong>{r.runner_name}</strong> — {r.alerts}
-              <div style={{ fontSize:11,marginTop:4,opacity:.7 }}>{new Date(r.created_at).toLocaleDateString("en-GB")}</div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    tab==="profile"&&React.createElement(Card,{title:"My Coach Profile"},
+      React.createElement("div",{style:{fontSize:12,color:C.text3,marginBottom:12}},"Athletes search for coaches by name. Make sure your profile is complete."),
+      React.createElement(Fld,{label:"Display Name"},React.createElement(Inp,{placeholder:"Your name",value:user.name,onChange:()=>{}})),
+      React.createElement(Fld,{label:"Bio"},React.createElement("textarea",{value:coachProfile.bio,onChange:e=>setCoachProfile(p=>({...p,bio:e.target.value})),rows:3,placeholder:"Tell athletes about yourself...",style:{width:"100%",background:C.bg2,border:"1px solid "+C.border,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}})),
+      React.createElement(Fld,{label:"Speciality"},React.createElement(Chips,{value:coachProfile.speciality,onChange:v=>setCoachProfile(p=>({...p,speciality:v})),options:["Marathon","Trail running","Speed & track","Triathlon","Youth coaching","Rehabilitation"].map(l=>({label:l}))})),
+      React.createElement(Btn,{onClick:saveProfile,loading:savingProfile},"Save Profile")));
 }
 
 // ── MAIN APP ──
 function App() {
-  const [page, setPage] = useState("runner");
-  const [runnerState, setRunnerState] = useState("loading");
-  const [runnerName, setRunnerName] = useState("");
+  const [page,setPage]=useState("runner");
+  const [user,setUser]=useState(null);
+  const [loading,setLoading]=useState(true);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("ir_runner");
-    if (saved) { setRunnerName(saved); setRunnerState("dashboard"); }
-    else setRunnerState("onboard");
-  }, []);
+  useEffect(()=>{
+    const saved=localStorage.getItem("ir_user");
+    if(saved){try{setUser(JSON.parse(saved));}catch(e){}}
+    setLoading(false);
+  },[]);
 
-  return (
-    <div style={{ background: "#0d1117", color: "#e6edf3", minHeight: "100vh", maxWidth: 480, margin: "0 auto", fontFamily: "system-ui,-apple-system,Arial,sans-serif" }}>
-      {/* Nav */}
-      <div style={{ position:"sticky",top:0,zIndex:100,background:"rgba(13,17,23,0.96)",backdropFilter:"blur(16px)",borderBottom:"1px solid rgba(255,255,255,0.08)",padding:"0 16px",display:"flex",alignItems:"center",justifyContent:"space-between",height:54 }}>
-        <img src={`data:image/png;base64,${LOGO}`} style={{ height:32,objectFit:"contain" }} alt="IranRunners" />
-        <button onClick={()=>setPage(p=>p==="coach"?"runner":"coach")} style={{ padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,border:`1px solid ${page==="coach"?"#c0392b":"rgba(255,255,255,0.08)"}`,background:page==="coach"?"#c0392b":"transparent",color:page==="coach"?"#fff":"#8b949e",cursor:"pointer" }}>
-          Coach
-        </button>
-      </div>
+  const logout = () => { localStorage.removeItem("ir_user"); setUser(null); };
 
-      {/* Pages */}
-      <div style={{ padding:16, paddingBottom:90 }}>
-        {page==="runner" && (
-          runnerState==="loading" ? <div style={{ textAlign:"center",padding:60,color:"#484f58" }}>Loading...</div>
-          : runnerState==="onboard" ? <Onboard onSetup={()=>setRunnerState("setup")} onLogin={()=>setRunnerState("login")} />
-          : runnerState==="setup" ? <Setup onSave={n=>{setRunnerName(n);setRunnerState("dashboard");}} />
-          : runnerState==="login" ? <Login onLogin={n=>{localStorage.setItem("ir_runner",n);setRunnerName(n);setRunnerState("dashboard");}} />
-          : <RunnerDashboard runnerName={runnerName} />
-        )}
-        {page==="coach" && <CoachPanel />}
-      </div>
+  if(loading)return React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:C.bg}},React.createElement("div",{style:{fontSize:14,color:C.text3}},"Loading..."));
 
-      {/* Bottom nav */}
-      <div style={{ position:"fixed",bottom:0,left:0,right:0,maxWidth:480,margin:"0 auto",background:"rgba(13,17,23,0.96)",backdropFilter:"blur(16px)",borderTop:"1px solid rgba(255,255,255,0.08)",display:"flex",paddingBottom:"calc(8px + env(safe-area-inset-bottom))",paddingTop:8,zIndex:100 }}>
-        {[{id:"runner",icon:"🏃",label:"Runner"},{id:"coach",icon:"📊",label:"Coach"}].map(b=>(
-          <button key={b.id} onClick={()=>setPage(b.id)} style={{ flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:6,color:page===b.id?"#c0392b":"#484f58",fontSize:10,fontWeight:500 }}>
-            <span style={{ fontSize:20 }}>{b.icon}</span>
-            <span>{b.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+  return React.createElement("div",{style:{background:C.bg,color:C.text,minHeight:"100vh",maxWidth:480,margin:"0 auto",fontFamily:"system-ui,-apple-system,Arial,sans-serif"}},
+    React.createElement("nav",{style:{position:"sticky",top:0,zIndex:100,background:"rgba(13,17,23,.96)",backdropFilter:"blur(16px)",borderBottom:"1px solid "+C.border,padding:"0 16px",display:"flex",alignItems:"center",justifyContent:"space-between",height:54}},
+      React.createElement("img",{src:"data:image/png;base64,"+LOGO,style:{height:32,objectFit:"contain"},alt:""}),
+      user&&React.createElement("button",{onClick:()=>setPage(p=>p==="coach"?"runner":"coach"),style:{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,border:"1px solid "+(page==="coach"?C.accent:C.border),background:page==="coach"?C.accent:"transparent",color:page==="coach"?"#fff":C.text2,cursor:"pointer"}},"Coach")),
+    React.createElement("div",{style:{padding:16,paddingBottom:90}},
+      !user?React.createElement(AuthScreen,{onLogin:u=>{setUser(u);setPage("runner");}})
+      :page==="runner"?React.createElement(RunnerDashboard,{user,onLogout:logout})
+      :React.createElement(CoachPanel,{user,onLogout:logout})),
+    user&&React.createElement("div",{style:{position:"fixed",bottom:0,left:0,right:0,maxWidth:480,margin:"0 auto",background:"rgba(13,17,23,.96)",backdropFilter:"blur(16px)",borderTop:"1px solid "+C.border,display:"flex",paddingBottom:"calc(8px + env(safe-area-inset-bottom))",paddingTop:8,zIndex:100}},
+      [{id:"runner",icon:"🏃",label:"Runner"},{id:"coach",icon:"📊",label:"Coach"}].map(b=>React.createElement("button",{key:b.id,onClick:()=>setPage(b.id),style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:6,color:page===b.id?C.accent:C.text3,fontSize:10,fontWeight:500}},
+        React.createElement("span",{style:{fontSize:20}},b.icon),React.createElement("span",null,b.label)))));
 }
 
-
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
 </html>
