@@ -107,6 +107,7 @@ function Tabs({tabs,active,onChange}) {
 function AuthScreen({onLogin}) {
   const [mode,setMode]=useState("login");
   const [email,setEmail]=useState(""); const [pass,setPass]=useState(""); const [name,setName]=useState("");
+  const [role,setRole]=useState("runner");
   const [err,setErr]=useState(""); const [loading,setLoading]=useState(false);
 
   const submit = async () => {
@@ -116,7 +117,7 @@ function AuthScreen({onLogin}) {
     if(mode==="signup") {
       const existing = await db("users","GET",null,"?email=eq."+encodeURIComponent(email)+"&limit=1");
       if(existing&&existing.length>0){setErr("Email already registered");setLoading(false);return;}
-      const res = await db("users","POST",{email,password:pass,name,role:"runner"});
+      const res = await db("users","POST",{email,password:pass,name,role});
       if(res&&res.length>0){localStorage.setItem("ir_user",JSON.stringify(res[0]));onLogin(res[0]);}
       else setErr("Error creating account");
     } else {
@@ -134,6 +135,11 @@ function AuthScreen({onLogin}) {
         ["login","signup"].map(m=>React.createElement("button",{key:m,onClick:()=>{setMode(m);setErr("");},style:{flex:1,padding:8,fontSize:13,fontWeight:600,border:"none",background:m===mode?C.card:"transparent",color:m===mode?C.text:C.text3,cursor:"pointer",borderRadius:6}},m==="login"?"Sign In":"Sign Up"))),
       React.createElement(Card,null,
         mode==="signup"&&React.createElement(Fld,{label:"Full Name"},React.createElement(Inp,{placeholder:"Ali Rezaei",value:name,onChange:setName})),
+        mode==="signup"&&React.createElement(Fld,{label:"I am a..."},
+          React.createElement("div",{style:{display:"flex",gap:8}},
+            [{id:"runner",icon:"🏃",label:"Runner"},{id:"coach",icon:"📋",label:"Coach"}].map(r=>
+              React.createElement("button",{key:r.id,onClick:()=>setRole(r.id),style:{flex:1,padding:"12px 8px",borderRadius:10,border:"2px solid "+(role===r.id?C.accent:C.border),background:role===r.id?"rgba(192,57,43,.1)":"transparent",color:role===r.id?C.accent:C.text2,cursor:"pointer",fontSize:13,fontWeight:600}},
+                React.createElement("div",{style:{fontSize:24,marginBottom:4}},r.icon),r.label)))),
         React.createElement(Fld,{label:"Email"},React.createElement(Inp,{type:"email",placeholder:"you@example.com",value:email,onChange:setEmail})),
         React.createElement(Fld,{label:"Password"},React.createElement(Inp,{type:"password",placeholder:"Min 6 characters",value:pass,onChange:setPass})),
         err&&React.createElement("div",{style:{color:C.danger,fontSize:13,marginBottom:8}},err),
@@ -693,13 +699,13 @@ function App() {
   return React.createElement("div",{style:{background:C.bg,color:C.text,minHeight:"100vh",maxWidth:480,margin:"0 auto",fontFamily:"system-ui,-apple-system,Arial,sans-serif"}},
     React.createElement("nav",{style:{position:"sticky",top:0,zIndex:100,background:"rgba(13,17,23,.96)",backdropFilter:"blur(16px)",borderBottom:"1px solid "+C.border,padding:"0 16px",display:"flex",alignItems:"center",justifyContent:"space-between",height:54}},
       React.createElement("img",{src:"data:image/png;base64,"+LOGO,style:{height:32,objectFit:"contain"},alt:""}),
-      user&&React.createElement("button",{onClick:()=>setPage(p=>p==="coach"?"runner":"coach"),style:{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,border:"1px solid "+(page==="coach"?C.accent:C.border),background:page==="coach"?C.accent:"transparent",color:page==="coach"?"#fff":C.text2,cursor:"pointer"}},"Coach")),
+      user&&user.role==="coach"&&React.createElement("button",{onClick:()=>setPage(p=>p==="coach"?"runner":"coach"),style:{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,border:"1px solid "+(page==="coach"?C.accent:C.border),background:page==="coach"?C.accent:"transparent",color:page==="coach"?"#fff":C.text2,cursor:"pointer"}},"Coach Panel")),
     React.createElement("div",{style:{padding:16,paddingBottom:90}},
-      !user?React.createElement(AuthScreen,{onLogin:u=>{setUser(u);setPage("runner");}})
+      !user?React.createElement(AuthScreen,{onLogin:u=>{setUser(u);setPage(u.role==="coach"?"coach":"runner");}})
       :page==="runner"?React.createElement(RunnerDashboard,{user,onLogout:logout})
       :React.createElement(CoachPanel,{user,onLogout:logout})),
     user&&React.createElement("div",{style:{position:"fixed",bottom:0,left:0,right:0,maxWidth:480,margin:"0 auto",background:"rgba(13,17,23,.96)",backdropFilter:"blur(16px)",borderTop:"1px solid "+C.border,display:"flex",paddingBottom:"calc(8px + env(safe-area-inset-bottom))",paddingTop:8,zIndex:100}},
-      [{id:"runner",icon:"🏃",label:"Runner"},{id:"coach",icon:"📊",label:"Coach"}].map(b=>React.createElement("button",{key:b.id,onClick:()=>setPage(b.id),style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:6,color:page===b.id?C.accent:C.text3,fontSize:10,fontWeight:500}},
+      (user.role==="coach"?[{id:"coach",icon:"📊",label:"Coach Panel"}]:[{id:"runner",icon:"🏃",label:"My Training"}]).map(b=>React.createElement("button",{key:b.id,onClick:()=>setPage(b.id),style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:6,color:C.accent,fontSize:10,fontWeight:500}},
         React.createElement("span",{style:{fontSize:20}},b.icon),React.createElement("span",null,b.label)))));
 }
 
