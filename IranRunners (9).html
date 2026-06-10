@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IranRunners">
+<meta name="theme-color" content="#0d1117">
+<title>IranRunners</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,Arial,sans-serif}
+input,textarea,select,button{font-family:inherit}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+
+const COACH_PASS = "125844";
+const LOGO = "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";
+
+const S={get:(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),id:()=>Date.now().toString(36)+Math.random().toString(36).slice(2)};
+const C={bg:"#0d1117",bg2:"#161b22",bg3:"#21262d",card:"#1c2128",border:"rgba(255,255,255,0.08)",accent:"#c0392b",green:"#27ae60",warn:"#f39c12",danger:"#e74c3c",blue:"#2980b9",text:"#e6edf3",text2:"#8b949e",text3:"#484f58"};
+const WT={interval:{label:"Interval",icon:"⚡",color:"#e74c3c",desc:"High-intensity repeats. Builds speed and VO₂max.",example:"e.g. 5×800m @ 3:50/km, 90s jog recovery"},easy:{label:"Easy Run",icon:"🟢",color:"#27ae60",desc:"Conversational pace. Builds aerobic base.",example:"e.g. 8km @ 5:30/km, Z2"},tempo:{label:"Tempo",icon:"🟠",color:"#f39c12",desc:"Comfortably hard at lactate threshold.",example:"e.g. 2km warm-up + 6km @ 4:30/km"},fartlek:{label:"Fartlek",icon:"🌈",color:"#9b59b6",desc:"Unstructured speed play based on feel.",example:"e.g. 8km: 1km easy, 2min hard, repeat"},longrun:{label:"Long Run",icon:"🔵",color:"#2980b9",desc:"Slow and steady. Cornerstone of endurance.",example:"e.g. 20km @ 5:45/km, Z2"},rest:{label:"Rest",icon:"😴",color:"#484f58",desc:"Full recovery. No running.",example:"Optional: 20min yoga"}};
+const GR=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const IR=["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday"];
+
+function secToTime(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${h}:${String(m).padStart(2,"0")}:${String(sc).padStart(2,"0")}`:`${m}:${String(sc).padStart(2,"0")}`;}
+function paceToSec(p){const pts=String(p).split(":");return pts.length===2?parseInt(pts[0])*60+parseInt(pts[1]):parseFloat(p)*60;}
+function secToPace(s){return `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,"0")}`;}
+function calcRec(r){let s=70;if(r.rhr>65)s-=15;if(r.motivation<=2)s-=10;if(r.sleepHrs<6&&r.sleepHrs>0)s-=15;if(r.pain==="Serious pain")s-=20;return Math.max(10,Math.min(100,s));}
+function getWeeks(m,cal){const[y,mo]=m.split("-").map(Number);const first=new Date(y,mo-1,1),last=new Date(y,mo,0);const sd=cal==="persian"?6:1;const wks=[];let cur=new Date(first);while(cur.getDay()!==sd)cur.setDate(cur.getDate()-1);while(cur<=last){const end=new Date(cur);end.setDate(end.getDate()+6);wks.push({start:new Date(cur),end,label:cur.toLocaleDateString("en-GB",{day:"numeric",month:"short"})+" – "+end.toLocaleDateString("en-GB",{day:"numeric",month:"short"})});cur.setDate(cur.getDate()+7);}return wks;}
+
+function Inp({placeholder,type="text",value,onChange,min,max,step}){return <input type={type} placeholder={placeholder} value={value||""} min={min} max={max} step={step} onChange={onChange} style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"11px 13px",fontSize:14,color:C.text,outline:"none",WebkitAppearance:"none"}}/>;}
+function Fld({label,children}){return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:12,color:C.text2,marginBottom:6,fontWeight:500}}>{label}</div>}{children}</div>;}
+function Card({title,children,style={}}){return <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:12,...style}}>{title&&<div style={{fontSize:14,fontWeight:700,marginBottom:16}}>{title}</div>}{children}</div>;}
+function Btn({children,onClick,secondary,sm,color,full=true,loading}){return <button onClick={onClick} disabled={loading} style={{width:full?"100%":"auto",padding:sm?"8px 16px":"14px",borderRadius:sm?20:14,border:secondary?`1px solid ${C.border}`:"none",background:secondary?"transparent":color||C.accent,color:secondary?C.text2:"#fff",fontSize:sm?12:15,fontWeight:700,cursor:"pointer",marginTop:full&&!sm?12:0}}>{loading?"Saving...":children}</button>;}
+function Tag({children,color=C.green}){return <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:color+"22",color}}>{children}</span>;}
+function Chips({options,value,onChange}){return <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{options.map(o=>{const label=typeof o==="string"?o:o.label;const color=typeof o==="object"&&o.color?o.color:C.accent;const sel=value===label;return <button key={label} onClick={()=>onChange(sel?"":label)} style={{padding:"7px 14px",borderRadius:20,fontSize:12,fontWeight:500,border:`1px solid ${sel?color:C.border}`,background:sel?color+"22":"rgba(255,255,255,.03)",color:sel?color:C.text2,cursor:"pointer"}}>{label}</button>;})}</div>;}
+function Tabs({tabs,active,onChange}){return <div style={{display:"flex",gap:2,background:C.bg3,borderRadius:8,padding:3,marginBottom:14,overflowX:"auto"}}>{tabs.map(t=><button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:"8px 8px",fontSize:11,fontWeight:600,border:"none",background:active===t.id?C.card:"transparent",color:active===t.id?C.text:C.text3,cursor:"pointer",borderRadius:6,whiteSpace:"nowrap"}}>{t.label}</button>)}</div>;}
+
+function WorkoutModal({day,existing,onSave,onClose}){
+  const[type,setType]=useState(existing?.type||"easy");
+  const[form,setForm]=useState(existing?.form||{});
+  const sf=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const wt=WT[type];
+  return <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:300,display:"flex",alignItems:"flex-end"}}>
+    <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:"16px 16px 0 0",width:"100%",maxHeight:"92vh",overflowY:"auto",padding:20}}>
+      <div style={{width:32,height:3,background:C.border,borderRadius:2,margin:"0 auto 14px"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <b style={{fontSize:15}}>{day}</b>
+        <button onClick={onClose} style={{background:C.bg3,border:"none",color:C.text2,width:28,height:28,borderRadius:"50%",cursor:"pointer"}}>✕</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
+        {Object.entries(WT).map(([k,v])=><button key={k} onClick={()=>{setType(k);setForm({});}} style={{padding:"10px 4px",borderRadius:10,border:`2px solid ${type===k?v.color:C.border}`,background:type===k?v.color+"22":"transparent",color:type===k?v.color:C.text3,cursor:"pointer",fontSize:11,fontWeight:700,textAlign:"center"}}>
+          <div style={{fontSize:20,marginBottom:3}}>{v.icon}</div>{v.label}
+        </button>)}
+      </div>
+      <div style={{background:C.bg3,borderLeft:`3px solid ${wt.color}`,borderRadius:8,padding:12,marginBottom:12}}>
+        <div style={{fontSize:12,fontWeight:700,color:wt.color,marginBottom:4}}>{wt.label}</div>
+        <div style={{fontSize:12,color:C.text2,lineHeight:1.7,marginBottom:4}}>{wt.desc}</div>
+        <div style={{fontSize:11,color:C.text3,fontStyle:"italic"}}>{wt.example}</div>
+      </div>
+      {type==="interval"&&<>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Fld label="Sets"><Inp type="number" placeholder="4" value={form.sets} onChange={e=>sf("sets",e.target.value)}/></Fld>
+          <Fld label="Reps"><Inp type="number" placeholder="1" value={form.reps} onChange={e=>sf("reps",e.target.value)}/></Fld>
+          <Fld label="Distance per rep"><Inp placeholder="800m" value={form.dist} onChange={e=>sf("dist",e.target.value)}/></Fld>
+          <Fld label="Target pace"><Inp placeholder="3:50/km" value={form.pace} onChange={e=>sf("pace",e.target.value)}/></Fld>
+          <Fld label="Recovery time"><Inp placeholder="90sec" value={form.recTime} onChange={e=>sf("recTime",e.target.value)}/></Fld>
+        </div>
+        <Fld label="Recovery type"><Chips value={form.recType||""} onChange={v=>sf("recType",v)} options={["Jog","Walk","Rest"]}/></Fld>
+        <Fld label="HR Zone"><Chips value={form.zone||""} onChange={v=>sf("zone",v)} options={["Z3","Z4","Z5"]}/></Fld>
+        <Fld label="Warm-up"><Inp placeholder="e.g. 2km easy" value={form.warmup} onChange={e=>sf("warmup",e.target.value)}/></Fld>
+      </>}
+      {(type==="easy"||type==="longrun")&&<>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Fld label="Distance (km)"><Inp type="number" step="0.5" placeholder="10" value={form.dist} onChange={e=>sf("dist",e.target.value)}/></Fld>
+          <Fld label="Target pace"><Inp placeholder="5:30/km" value={form.pace} onChange={e=>sf("pace",e.target.value)}/></Fld>
+        </div>
+        <Fld label="HR Zone"><Chips value={form.zone||""} onChange={v=>sf("zone",v)} options={["Z1","Z2","Z2-Z3"]}/></Fld>
+        {type==="longrun"&&<Fld label="Nutrition"><Inp placeholder="e.g. gel every 45min" value={form.nutrition} onChange={e=>sf("nutrition",e.target.value)}/></Fld>}
+      </>}
+      {type==="tempo"&&<>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Fld label="Distance (km)"><Inp type="number" step="0.5" placeholder="6" value={form.dist} onChange={e=>sf("dist",e.target.value)}/></Fld>
+          <Fld label="Target pace"><Inp placeholder="4:30/km" value={form.pace} onChange={e=>sf("pace",e.target.value)}/></Fld>
+        </div>
+        <Fld label="Zone"><Chips value={form.zone||""} onChange={v=>sf("zone",v)} options={["Z3","Z3-Z4","Z4"]}/></Fld>
+      </>}
+      {type==="fartlek"&&<>
+        <Fld label="Total distance (km)"><Inp type="number" step="0.5" placeholder="8" value={form.dist} onChange={e=>sf("dist",e.target.value)}/></Fld>
+        <Fld label="Structure"><textarea value={form.structure||""} onChange={e=>sf("structure",e.target.value)} rows={3} placeholder="1km easy, 2min hard..." style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}/></Fld>
+      </>}
+      <Fld label="Notes"><textarea value={form.notes||""} onChange={e=>sf("notes",e.target.value)} rows={2} placeholder="Additional instructions..." style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}/></Fld>
+      <div style={{display:"flex",gap:8,marginTop:12}}>
+        <button onClick={onClose} style={{flex:1,padding:12,borderRadius:10,border:`1px solid ${C.border}`,background:"transparent",color:C.text2,fontSize:14,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+        <button onClick={()=>onSave({type,form,label:wt.label,icon:wt.icon,color:wt.color})} style={{flex:2,padding:12,borderRadius:10,border:"none",background:wt.color,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Save Workout</button>
+      </div>
+    </div>
+  </div>;
+}
+
+function PlanBuilder({runners,editPlan,onSave,onCancel}){
+  const today=new Date();
+  const[calType,setCalType]=useState(editPlan?.calType||"gregorian");
+  const[month,setMonth]=useState(editPlan?.month||(today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")));
+  const[weekIdx,setWeekIdx]=useState(0);
+  const[runner,setRunner]=useState(editPlan?.runner||"");
+  const[intensity,setIntensity]=useState(editPlan?.intensity||"Base");
+  const[workouts,setWorkouts]=useState(editPlan?.workouts||{});
+  const[editDay,setEditDay]=useState(null);
+  const[sendMode,setSendMode]=useState(editPlan?.sendMode||"immediate");
+  const[preview,setPreview]=useState(false);
+  const[saving,setSaving]=useState(false);
+  const days=calType==="persian"?IR:GR;
+  const weeks=month?getWeeks(month,calType):[];
+  const curWeek=weeks[weekIdx]||weeks[0];
+  const totalKm=Object.values(workouts).reduce((s,w)=>s+(w?parseFloat(w.form?.dist||0):0),0).toFixed(1);
+  const genText=()=>days.map(d=>{const w=workouts[d];if(!w||w.type==="rest")return d+": Rest";let l=d+": "+w.label;if(w.form.sets)l+=" — "+w.form.sets+"×"+(w.form.reps||"")+" "+(w.form.dist||"");if(w.form.dist&&!w.form.sets)l+=" — "+w.form.dist+"km";if(w.form.pace)l+=" @ "+w.form.pace+"/km";if(w.form.zone)l+=" ["+w.form.zone+"]";if(w.form.notes)l+=" · "+w.form.notes;return l;}).join("\n");
+  const save=()=>{if(!runner&&!editPlan){alert("Select athlete");return;}setSaving(true);const plan={id:editPlan?.id||S.id(),runner:editPlan?.runner||runner,calType,month,weekStart:curWeek?.start.toISOString().slice(0,10)||"",weekLabel:curWeek?.label||"",intensity,workouts,sendMode,text:genText(),createdAt:editPlan?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};const plans=S.get("ir_plans",[]);if(editPlan){const idx=plans.findIndex(p=>p.id===editPlan.id);if(idx>=0)plans[idx]=plan;else plans.unshift(plan);}else plans.unshift(plan);S.set("ir_plans",plans);setSaving(false);alert(editPlan?"Plan updated!":"Saved for "+runner+"!");onSave&&onSave();};
+  return <div>
+    <button onClick={onCancel} style={{background:"none",border:"none",color:C.accent,fontSize:13,cursor:"pointer",marginBottom:12,padding:0}}>← Back</button>
+    {editPlan&&<div style={{background:"rgba(243,156,18,.1)",border:"1px solid rgba(243,156,18,.3)",borderRadius:10,padding:12,marginBottom:12,fontSize:13,color:C.warn}}>✏️ Editing plan for {editPlan.runner}</div>}
+    <Card title={editPlan?"Edit Plan":"New Training Plan"}>
+      {!editPlan&&<Fld label="Athlete"><select value={runner} onChange={e=>setRunner(e.target.value)} style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"11px 13px",fontSize:14,color:C.text,outline:"none"}}><option value="">-- Select --</option>{runners.map(r=><option key={r} value={r}>{r}</option>)}</select></Fld>}
+      <Fld label="Calendar">
+        <div style={{display:"flex",gap:8}}>
+          {[{id:"gregorian",icon:"🗓",label:"Mon–Sun"},{id:"persian",icon:"📅",label:"Sat–Fri"}].map(c=><button key={c.id} onClick={()=>{setCalType(c.id);setWeekIdx(0);}} style={{flex:1,padding:"10px 6px",borderRadius:10,border:`2px solid ${calType===c.id?C.accent:C.border}`,background:calType===c.id?"rgba(192,57,43,.1)":"transparent",color:calType===c.id?C.accent:C.text2,fontSize:12,fontWeight:700,cursor:"pointer",textAlign:"center"}}><div style={{fontSize:18,marginBottom:3}}>{c.icon}</div>{c.label}</button>)}
+        </div>
+      </Fld>
+      <Fld label="Month"><Inp type="month" value={month} onChange={e=>{setMonth(e.target.value);setWeekIdx(0);}}/></Fld>
+      {weeks.length>0&&<Fld label="Select week"><div style={{display:"flex",flexDirection:"column",gap:6}}>{weeks.map((w,i)=><button key={i} onClick={()=>setWeekIdx(i)} style={{padding:"10px 14px",borderRadius:10,border:`2px solid ${weekIdx===i?C.accent:C.border}`,background:weekIdx===i?"rgba(192,57,43,.1)":"transparent",color:weekIdx===i?C.accent:C.text2,fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left",display:"flex",justifyContent:"space-between"}}><span>Week {i+1}: {w.label}</span>{weekIdx===i&&<span style={{fontSize:10,background:C.accent,color:"#fff",padding:"2px 8px",borderRadius:20}}>✓</span>}</button>)}</div></Fld>}
+      <Fld label="Intensity"><Chips value={intensity} onChange={setIntensity} options={[{label:"Recovery",color:C.green},{label:"Base"},{label:"Build",color:C.warn},{label:"Peak",color:C.danger}]}/></Fld>
+      <div style={{background:C.bg3,borderRadius:8,padding:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:12,color:C.text2}}>Total volume</div><div style={{fontSize:20,fontWeight:700,color:C.accent}}>{totalKm} km</div></div>
+    </Card>
+    <div style={{fontSize:10,fontWeight:700,color:C.text3,textTransform:"uppercase",letterSpacing:".1em",margin:"14px 0 10px"}}>Schedule — {days[0]} to {days[6]}</div>
+    {days.map(day=>{const w=workouts[day];const wt=w?WT[w.type]:null;return <div key={day} style={{background:C.card,border:`1px solid ${wt?wt.color+"44":C.border}`,borderRadius:12,padding:14,marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:w?8:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {wt&&<span style={{fontSize:18}}>{wt.icon}</span>}
+          <div style={{fontSize:13,fontWeight:700,color:wt?wt.color:C.text3}}>{wt?wt.label+" — ":""}{day}</div>
+        </div>
+        <div style={{display:"flex",gap:6}}>
+          <button onClick={()=>setEditDay(day)} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${wt?wt.color:C.border}`,background:"transparent",color:wt?wt.color:C.text3,fontSize:11,fontWeight:600,cursor:"pointer"}}>{w?"Edit":"+ Add"}</button>
+          {w&&<button onClick={()=>setWorkouts(p=>{const n={...p};delete n[day];return n;})} style={{padding:"5px 8px",borderRadius:20,border:"none",background:"rgba(231,76,60,.15)",color:C.danger,fontSize:11,cursor:"pointer"}}>✕</button>}
+        </div>
+      </div>
+      {w&&w.type!=="rest"&&<div style={{fontSize:12,color:C.text2,lineHeight:1.9,background:C.bg3,borderRadius:8,padding:8}}>
+        {w.form.sets&&<div>⚡ {w.form.sets}×{w.form.reps||""} {w.form.dist||""}</div>}
+        {w.form.dist&&!w.form.sets&&<div>📏 {w.form.dist} km</div>}
+        {w.form.pace&&<div>⏱ {w.form.pace}/km</div>}
+        {w.form.zone&&<div>💓 {w.form.zone}</div>}
+        {w.form.notes&&<div style={{color:C.text3,fontStyle:"italic"}}>📝 {w.form.notes}</div>}
+      </div>}
+    </div>;})}
+    <Card title="Send Options" style={{marginTop:8}}>
+      <div style={{display:"flex",gap:8}}>
+        {[{id:"immediate",icon:"⚡",label:"Send now"},{id:"review",icon:"👁",label:"Review first"}].map(s=><button key={s.id} onClick={()=>setSendMode(s.id)} style={{flex:1,padding:"10px 6px",borderRadius:10,border:`2px solid ${sendMode===s.id?C.accent:C.border}`,background:sendMode===s.id?"rgba(192,57,43,.1)":"transparent",color:sendMode===s.id?C.accent:C.text2,fontSize:12,fontWeight:700,cursor:"pointer",textAlign:"center"}}><div style={{fontSize:20,marginBottom:3}}>{s.icon}</div>{s.label}</button>)}
+      </div>
+      <div style={{display:"flex",gap:8,marginTop:8}}>
+        <button onClick={()=>setPreview(!preview)} style={{flex:1,padding:12,borderRadius:10,border:`1px solid ${C.border}`,background:"transparent",color:C.text2,fontSize:13,fontWeight:600,cursor:"pointer"}}>{preview?"Hide":"Preview"}</button>
+        <button onClick={save} disabled={saving} style={{flex:2,padding:12,borderRadius:10,border:"none",background:C.accent,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{saving?"Saving...":editPlan?"Update":"Save & Send"}</button>
+      </div>
+    </Card>
+    {preview&&<pre style={{fontSize:12,color:C.text2,lineHeight:1.9,whiteSpace:"pre-wrap",fontFamily:"monospace",background:C.card,borderRadius:14,padding:16,marginTop:4}}>{genText()}</pre>}
+    {editDay&&<WorkoutModal day={editDay} existing={workouts[editDay]} onSave={w=>{setWorkouts(p=>({...p,[editDay]:w}));setEditDay(null);}} onClose={()=>setEditDay(null)}/>}
+  </div>;
+}
+
+function AthletePlans({name}){
+  const plans=S.get("ir_plans",[]).filter(p=>p.runner===name);
+  const[sel,setSel]=useState(plans[0]||null);
+  const[feedbacks,setFeedbacks]=useState(()=>S.get("ir_feedbacks",{}));
+  const[saving,setSaving]=useState(null);
+  const days=sel?(sel.calType==="persian"?IR:GR):GR;
+  const setFb=(pid,day,k,v)=>{const key=pid+"_"+day;setFeedbacks(p=>{const n={...p,[key]:{...(p[key]||{}),[k]:v}};S.set("ir_feedbacks",n);return n;});};
+  const saveFb=(pid,day)=>{setSaving(day);const key=pid+"_"+day;const all={...feedbacks,[key]:{...feedbacks[key],savedAt:new Date().toISOString()}};S.set("ir_feedbacks",all);setFeedbacks(all);setSaving(null);alert("Feedback saved!");};
+  if(!plans.length)return <div style={{textAlign:"center",padding:40,color:C.text3}}><div style={{fontSize:32,marginBottom:8}}>📅</div><p style={{fontSize:13}}>No plan yet. Your coach will assign one soon.</p></div>;
+  return <div>
+    {plans.length>1&&<div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,marginBottom:12}}>{plans.map(p=><button key={p.id} onClick={()=>setSel(p)} style={{padding:"6px 14px",borderRadius:20,border:`1px solid ${sel?.id===p.id?C.accent:C.border}`,background:sel?.id===p.id?C.accent:"transparent",color:sel?.id===p.id?"#fff":C.text2,fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}}>{p.weekLabel||"Week"}</button>)}</div>}
+    {sel&&<div style={{background:"rgba(192,57,43,.08)",border:"1px solid rgba(192,57,43,.2)",borderRadius:12,padding:14,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div><div style={{fontSize:13,fontWeight:700,color:C.accent}}>{sel.intensity} Phase</div><div style={{fontSize:11,color:C.text3,marginTop:2}}>{sel.weekLabel||sel.weekStart}</div></div>
+      <div style={{fontSize:18,fontWeight:700,color:C.accent}}>{Object.values(sel.workouts||{}).filter(w=>w&&w.type!=="rest").length} sessions</div>
+    </div>}
+    {days.map(day=>{const w=sel?.workouts?.[day];const wt=w?WT[w.type]:null;const fbKey=sel?.id+"_"+day;const fb=feedbacks[fbKey]||{};
+    return <div key={day} style={{background:C.card,border:`1px solid ${wt?wt.color+"44":C.border}`,borderRadius:14,padding:16,marginBottom:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:w?10:0}}>
+        {w&&<span style={{fontSize:18}}>{w.icon}</span>}
+        <div><div style={{fontSize:14,fontWeight:700,color:wt?wt.color:C.text3}}>{day}</div>{w&&<div style={{fontSize:11,color:C.text2,marginTop:1}}>{w.label}</div>}</div>
+      </div>
+      {w&&w.type!=="rest"&&<div style={{fontSize:12,color:C.text2,lineHeight:1.9,background:C.bg3,borderRadius:8,padding:10,marginBottom:12}}>
+        {w.form.sets&&<div>⚡ {w.form.sets}×{w.form.reps||""} {w.form.dist||""}</div>}
+        {w.form.dist&&!w.form.sets&&<div>📏 {w.form.dist} km</div>}
+        {w.form.pace&&<div>⏱ {w.form.pace}/km</div>}
+        {w.form.zone&&<div>💓 {w.form.zone}</div>}
+        {w.form.recTime&&<div>🔄 Recovery: {w.form.recTime}</div>}
+        {w.form.structure&&<div>🌈 {w.form.structure}</div>}
+        {w.form.nutrition&&<div>🍌 {w.form.nutrition}</div>}
+        {w.form.notes&&<div style={{color:C.text3,fontStyle:"italic"}}>📝 {w.form.notes}</div>}
+      </div>}
+      {w&&w.type!=="rest"&&<div style={{borderTop:`1px solid ${C.border}`,paddingTop:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}}>Your Feedback</div>
+        <div style={{display:"flex",gap:8,marginBottom:8,alignItems:"center"}}>
+          <div style={{fontSize:12,color:C.text2,flexShrink:0}}>Done?</div>
+          {[{v:true,l:"✅ Yes"},{v:false,l:"❌ No"}].map(x=><button key={String(x.v)} onClick={()=>setFb(sel.id,day,"done",x.v)} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${fb.done===x.v?C.accent:C.border}`,background:fb.done===x.v?"rgba(192,57,43,.1)":"transparent",color:fb.done===x.v?C.accent:C.text2,fontSize:12,cursor:"pointer"}}>{x.l}</button>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <Fld label="Actual dist (km)"><Inp type="number" step="0.1" placeholder="0" value={fb.dist||""} onChange={e=>setFb(sel.id,day,"dist",e.target.value)}/></Fld>
+          <Fld label="Actual pace"><Inp placeholder="5:30" value={fb.pace||""} onChange={e=>setFb(sel.id,day,"pace",e.target.value)}/></Fld>
+        </div>
+        <Fld label="How did it feel?"><Chips value={fb.feel||""} onChange={v=>setFb(sel.id,day,"feel",v)} options={["Easy 😊","Good 👍","Hard 😰","Very hard 💪","Couldn't finish ❌"]}/></Fld>
+        <Fld label={`RPE: ${fb.rpe||5}/10`}><input type="range" min={1} max={10} value={fb.rpe||5} onChange={e=>setFb(sel.id,day,"rpe",parseInt(e.target.value))} style={{width:"100%",accentColor:C.accent}}/></Fld>
+        <Fld label="Notes"><textarea value={fb.notes||""} onChange={e=>setFb(sel.id,day,"notes",e.target.value)} rows={2} placeholder="How was the session?" style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 10px",fontSize:12,color:C.text,outline:"none",resize:"none"}}/></Fld>
+        <button onClick={()=>saveFb(sel.id,day)} disabled={saving===day} style={{width:"100%",padding:10,borderRadius:8,border:"none",background:C.accent,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",marginTop:4}}>{saving===day?"Saving...":"Save Feedback"}</button>
+        {fb.savedAt&&<div style={{fontSize:11,color:C.green,textAlign:"center",marginTop:6}}>✓ Saved {new Date(fb.savedAt).toLocaleDateString()}</div>}
+      </div>}
+    </div>;})}
+  </div>;
+}
+
+function WeeklyForm({name,onDone}){
+  const[km,setKm]=useState("");const[sess,setSess]=useState("");const[lr,setLr]=useState("");
+  const[pace,setPace]=useState("");const[tempo,setTempo]=useState("");
+  const[rhr,setRhr]=useState("");const[slh,setSlh]=useState("");
+  const[sleep,setSleep]=useState("");const[pain,setPain]=useState("");const[painLoc,setPainLoc]=useState("");
+  const[mot,setMot]=useState(3);const[energy,setEnergy]=useState("");const[stress,setStress]=useState("");const[rec,setRec]=useState("");
+  const[notes,setNotes]=useState("");const[rpe,setRpe]=useState(5);const[saving,setSaving]=useState(false);
+  const submit=()=>{setSaving(true);const alerts=[],status_ref={v:"ok"};const pain_v=pain,stress_v=stress,energy_v=energy;const rhr_v=parseInt(rhr)||0,slh_v=parseFloat(slh)||0,mot_v=mot;if(pain_v==="Serious pain"){status_ref.v="danger";alerts.push("Serious pain");}if(rhr_v>65&&rhr_v){if(status_ref.v==="ok")status_ref.v="warn";alerts.push("High resting HR");}if(mot_v<=2){if(status_ref.v==="ok")status_ref.v="warn";alerts.push("Low motivation");}if(stress_v==="Very high"){if(status_ref.v==="ok")status_ref.v="warn";alerts.push("Very high stress");}if(slh_v<6&&slh_v>0){if(status_ref.v==="ok")status_ref.v="warn";alerts.push("Sleep < 6h");}if(energy_v==="Very low"){if(status_ref.v==="ok")status_ref.v="warn";alerts.push("Very low energy");}const r={id:S.id(),createdAt:new Date().toISOString(),runner:name,km:parseFloat(km)||0,sessions:parseInt(sess)||0,longRun:parseFloat(lr)||0,pace:parseFloat(pace)||0,tempo:parseFloat(tempo)||0,rhr:rhr_v,sleepHrs:slh_v,sleep,pain:pain_v,painLoc,motivation:mot_v,energy:energy_v,stress:stress_v,recovery:rec,notes,rpe,status:status_ref.v,alerts};const all=S.get("ir_all_reports",[]);all.unshift(r);S.set("ir_all_reports",all);setSaving(false);onDone&&onDone();};
+  const now=new Date();
+  return <div>
+    <div style={{background:"linear-gradient(135deg,#1a2540,#0d1117)",border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:12}}>
+      <div style={{fontSize:12,color:C.text3,marginBottom:4}}>Week {now.getDate()}/{now.getMonth()+1}/{now.getFullYear()}</div>
+      <div style={{fontSize:20,fontWeight:700,marginBottom:4}}>Weekly Report</div>
+      <div style={{fontSize:13,color:C.text2}}>A few minutes — your coach sees everything</div>
+    </div>
+    <Card title="Training Data">
+      <Fld label="Total volume (km)"><Inp type="number" placeholder="52" value={km} onChange={e=>setKm(e.target.value)}/></Fld>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Fld label="Sessions"><Inp type="number" placeholder="5" value={sess} onChange={e=>setSess(e.target.value)}/></Fld>
+        <Fld label="Long run (km)"><Inp type="number" placeholder="18" value={lr} onChange={e=>setLr(e.target.value)}/></Fld>
+        <Fld label="Easy pace (min/km)"><Inp type="number" step="0.01" placeholder="5.30" value={pace} onChange={e=>setPace(e.target.value)}/></Fld>
+        <Fld label="Tempo pace (min/km)"><Inp type="number" step="0.01" placeholder="4.20" value={tempo} onChange={e=>setTempo(e.target.value)}/></Fld>
+      </div>
+      <Fld label={`RPE: ${rpe}/10`}><input type="range" min={1} max={10} value={rpe} onChange={e=>setRpe(parseInt(e.target.value))} style={{width:"100%",accentColor:C.accent}}/></Fld>
+    </Card>
+    <Card title="Body Signals">
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Fld label="Resting HR (bpm)"><Inp type="number" placeholder="54" value={rhr} onChange={e=>setRhr(e.target.value)}/></Fld>
+        <Fld label="Sleep hours"><Inp type="number" step="0.5" placeholder="7.5" value={slh} onChange={e=>setSlh(e.target.value)}/></Fld>
+      </div>
+      <Fld label="Sleep quality"><Chips value={sleep} onChange={setSleep} options={["Poor","Average","Good","Excellent"]}/></Fld>
+      <Fld label="Pain"><Chips value={pain} onChange={setPain} options={[{label:"No pain"},{label:"Mild pain",color:C.warn},{label:"Serious pain",color:C.danger}]}/></Fld>
+      <Fld label="Pain location"><Inp placeholder="e.g. right knee" value={painLoc} onChange={e=>setPainLoc(e.target.value)}/></Fld>
+    </Card>
+    <Card title="Mental & Recovery">
+      <Fld label={`Motivation: ${mot}/5`}><input type="range" min={1} max={5} value={mot} onChange={e=>setMot(parseInt(e.target.value))} style={{width:"100%",accentColor:C.accent}}/></Fld>
+      <Fld label="Energy"><Chips value={energy} onChange={setEnergy} options={[{label:"Very low",color:C.danger},{label:"Low",color:C.warn},{label:"Normal"},{label:"High"}]}/></Fld>
+      <Fld label="Stress"><Chips value={stress} onChange={setStress} options={[{label:"Low"},{label:"Moderate"},{label:"High",color:C.warn},{label:"Very high",color:C.danger}]}/></Fld>
+      <Fld label="Recovery"><Chips value={rec} onChange={setRec} options={[{label:"Very slow",color:C.danger},{label:"Slow",color:C.warn},{label:"Normal"},{label:"Fast",color:C.green}]}/></Fld>
+    </Card>
+    <Card title="Notes"><textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Anything your coach should know..." style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}/></Card>
+    <Btn onClick={submit} loading={saving}>Submit Weekly Report</Btn>
+  </div>;
+}
+
+function StrategyTab(){
+  const[tab,setTab]=useState("race");
+  const[dist,setDist]=useState("42.2");const[target,setTarget]=useState("");const[strategy,setStrategy]=useState("even");const[split,setSplit]=useState("5");
+  const[paceIn,setPaceIn]=useState("");const[distFt,setDistFt]=useState("42.2");
+  const[result,setResult]=useState(null);const[timeRes,setTimeRes]=useState(null);
+  const calcRace=()=>{const d=parseFloat(dist),t=paceToSec(target);if(!d||!t)return;const avg=t/d,iv=parseFloat(split)||5;const splits=[];let km=0;while(km<d){const end=Math.min(km+iv,d),sd=end-km;let sp=avg;if(strategy==="negative")sp=km<d/2?avg*1.03:avg*0.97;else if(strategy==="positive")sp=km<d/2?avg*0.97:avg*1.03;else if(strategy==="fast-start")sp=km<5?avg*0.95:avg*1.01;splits.push({from:km,to:end,pace:sp,time:sp*sd});km=end;}setResult({splits,avg,total:t,dist:d});};
+  return <div>
+    <Tabs tabs={[{id:"race",label:"Race Strategy"},{id:"pace",label:"Pace → Time"},{id:"zones",label:"Zones"}]} active={tab} onChange={setTab}/>
+    {tab==="race"&&<div>
+      <Card title="Race Strategy Calculator">
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Fld label="Distance (km)"><Inp type="number" step="0.1" placeholder="42.2" value={dist} onChange={e=>setDist(e.target.value)}/></Fld>
+          <Fld label="Target time"><Inp placeholder="3:45:00" value={target} onChange={e=>setTarget(e.target.value)}/></Fld>
+        </div>
+        <Fld label="Strategy"><Chips value={strategy} onChange={setStrategy} options={["even","negative","positive","fast-start"]}/></Fld>
+        <Fld label="Split every (km)"><Inp type="number" placeholder="5" value={split} onChange={e=>setSplit(e.target.value)}/></Fld>
+        <Btn onClick={calcRace}>Calculate</Btn>
+      </Card>
+      {result&&<Card title="Split Plan">
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,marginBottom:8}}>{["From","To","Pace","Time"].map(h=><div key={h} style={{fontSize:10,fontWeight:700,color:C.text3}}>{h}</div>)}</div>
+        {result.splits.map((s,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,padding:"6px 0",borderTop:`1px solid ${C.border}`}}>
+          <div style={{fontSize:12,color:C.text2}}>{s.from}km</div><div style={{fontSize:12,color:C.text2}}>{s.to.toFixed(1)}km</div>
+          <div style={{fontSize:12,fontWeight:600,color:C.accent}}>{secToPace(s.pace)}/km</div><div style={{fontSize:12}}>{secToTime(Math.round(s.time))}</div>
+        </div>)}
+      </Card>}
+    </div>}
+    {tab==="pace"&&<Card title="Pace → Finish Time">
+      <Fld label="Distance (km)"><Inp type="number" step="0.1" placeholder="42.2" value={distFt} onChange={e=>setDistFt(e.target.value)}/></Fld>
+      <Fld label="Target pace (min:sec/km)"><Inp placeholder="5:20" value={paceIn} onChange={e=>setPaceIn(e.target.value)}/></Fld>
+      <Btn onClick={()=>{const d=parseFloat(distFt),p=paceToSec(paceIn);if(d&&p)setTimeRes({time:secToTime(Math.round(p*d)),pace:secToPace(p),dist:d});}}>Calculate</Btn>
+      {timeRes&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>{[{l:"Finish time",v:timeRes.time,c:C.accent},{l:"Pace",v:timeRes.pace+"/km"},{l:"Distance",v:timeRes.dist+"km"}].map(x=><div key={x.l} style={{background:C.bg3,borderRadius:8,padding:12}}><div style={{fontSize:10,color:C.text3,marginBottom:3}}>{x.l}</div><div style={{fontSize:16,fontWeight:700,color:x.c||C.text}}>{x.v}</div></div>)}</div>}
+    </Card>}
+    {tab==="zones"&&<Card title="Training Zones">
+      <Fld label="Race pace (min:sec/km)"><Inp placeholder="5:20" value={paceIn} onChange={e=>setPaceIn(e.target.value)}/></Fld>
+      <Btn onClick={()=>{const p=paceToSec(paceIn);if(p)setTimeRes({zones:[{n:"Z1 Recovery",r:"<65%",m:1.5,u:"Warm-up"},{n:"Z2 Easy",r:"65–75%",m:1.25,u:"Long runs"},{n:"Z3 Tempo",r:"75–85%",m:1.05,u:"Tempo runs"},{n:"Z4 Threshold",r:"85–92%",m:0.97,u:"LT intervals"},{n:"Z5 VO₂max",r:">92%",m:0.88,u:"Intervals"}]});}}>Calculate</Btn>
+      {timeRes?.zones&&timeRes.zones.map((z,i)=><div key={i} style={{background:C.bg3,borderRadius:8,padding:12,marginTop:8}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><b style={{fontSize:13}}>{z.n}</b><b style={{fontSize:13,color:C.accent}}>{secToPace(paceToSec(paceIn)*z.m)}/km</b></div><div style={{fontSize:11,color:C.text3}}>{z.r} · {z.u}</div></div>)}
+    </Card>}
+  </div>;
+}
+
+function RunnerCoachTab({name}){
+  const[tab,setTab]=useState("find");
+  const[query,setQuery]=useState("");
+  const[results,setResults]=useState([]);
+  const[myCoach,setMyCoach]=useState(()=>S.get("ir_my_coach_"+name,null));
+  const[msgs,setMsgs]=useState(()=>S.get("ir_chat_"+name,[]));
+  const[text,setText]=useState("");
+  const chatRef=useRef(null);
+
+  useEffect(()=>{setTimeout(()=>chatRef.current&&(chatRef.current.scrollTop=chatRef.current.scrollHeight),100);},[msgs,tab]);
+
+  // Search coaches from all users with role=coach (stored by coach panel login)
+  const search=()=>{
+    if(!query.trim())return;
+    // Simulate coach profiles - in real app this would query DB
+    const allCoaches=[
+      {id:"coach-1",name:"IranRunners Coach",bio:"Head coach of IranRunners. 8 years experience.",speciality:"Marathon"},
+      {id:"coach-2",name:"Ali Karimi",bio:"Endurance specialist. VO2max training expert.",speciality:"Trail running"},
+      {id:"coach-3",name:"Sara Ahmadi",bio:"Youth & amateur running coach.",speciality:"5K & 10K"},
+    ].filter(c=>c.name.toLowerCase().includes(query.toLowerCase()));
+    setResults(allCoaches);
+  };
+
+  const follow=(coach)=>{
+    S.set("ir_my_coach_"+name,coach);
+    setMyCoach(coach);
+    // Add runner to coach's followers list - use fixed key "default"
+    const followers=S.get("ir_followers_default",[]);
+    if(!followers.find(f=>f.name===name)){
+      followers.push({name,joinedAt:new Date().toISOString(),coachId:coach.id});
+      S.set("ir_followers_default",followers);
+    }
+    setTab("profile");
+    alert("Now following "+coach.name+"!");
+  };
+
+  const send=()=>{
+    if(!text.trim())return;
+    const t=text;setText("");
+    const all=S.get("ir_chat_"+name,[]);
+    all.push({id:S.id(),from:"runner",text:t,at:new Date().toISOString()});
+    S.set("ir_chat_"+name,all);
+    setMsgs([...all]);
+  };
+
+  return <div>
+    <Tabs tabs={[{id:"find",label:"🔍 Find Coach"},{id:"profile",label:"👤 My Coach"},{id:"chat",label:"💬 Chat"}]} active={tab} onChange={setTab}/>
+
+    {tab==="find"&&<div>
+      <Card title="Find Your Coach">
+        <div style={{display:"flex",gap:8,marginBottom:12}}>
+          <Inp placeholder="Search by name..." value={query} onChange={e=>setQuery(e.target.value)}/>
+          <button onClick={search} style={{padding:"0 16px",borderRadius:10,border:"none",background:C.accent,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",flexShrink:0}}>Search</button>
+        </div>
+        {results.length===0&&<div style={{textAlign:"center",padding:20,color:C.text3,fontSize:13}}>Search for your coach by name.</div>}
+        {results.map(c=><div key={c.id} style={{background:C.bg3,borderRadius:10,padding:14,marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
+          <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(192,57,43,.2)",color:C.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,flexShrink:0}}>{c.name[0]}</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,fontWeight:700}}>{c.name}</div>
+            <div style={{fontSize:12,color:C.text3,marginTop:2}}>{c.bio}</div>
+            {c.speciality&&<Tag color={C.blue}>{c.speciality}</Tag>}
+          </div>
+          <button onClick={()=>follow(c)} style={{padding:"6px 12px",borderRadius:20,border:`1px solid ${myCoach?.id===c.id?C.green:C.accent}`,background:myCoach?.id===c.id?"rgba(39,174,96,.1)":"rgba(192,57,43,.1)",color:myCoach?.id===c.id?C.green:C.accent,fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0}}>{myCoach?.id===c.id?"Following ✓":"Follow"}</button>
+        </div>)}
+      </Card>
+    </div>}
+
+    {tab==="profile"&&<div>
+      {myCoach?<Card>
+        <div style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:14}}>
+          <div style={{width:64,height:64,borderRadius:"50%",background:"rgba(192,57,43,.15)",color:C.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700,flexShrink:0}}>{myCoach.name[0]}</div>
+          <div>
+            <div style={{fontSize:18,fontWeight:700}}>{myCoach.name}</div>
+            <div style={{fontSize:13,color:C.text3,marginTop:2}}>{myCoach.bio||"Your coach"}</div>
+            {myCoach.speciality&&<div style={{marginTop:6}}><Tag color={C.blue}>{myCoach.speciality}</Tag></div>}
+          </div>
+        </div>
+        <button onClick={()=>setTab("chat")} style={{width:"100%",padding:12,borderRadius:12,border:"none",background:C.accent,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Open Chat</button>
+      </Card>:
+      <div style={{textAlign:"center",padding:40,color:C.text3}}>
+        <div style={{fontSize:32,marginBottom:8}}>👤</div>
+        <p style={{fontSize:13,marginBottom:12}}>You haven't connected with a coach yet.</p>
+        <button onClick={()=>setTab("find")} style={{padding:"10px 20px",borderRadius:20,border:"none",background:C.accent,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer"}}>Find a Coach</button>
+      </div>}
+    </div>}
+
+    {tab==="chat"&&<Card title={myCoach?"Chat with "+myCoach.name:"Chat with Your Coach"}>
+      {!myCoach?<div style={{textAlign:"center",padding:20,color:C.text3,fontSize:13}}>Connect with a coach first.</div>:
+      <div>
+        <div ref={chatRef} style={{display:"flex",flexDirection:"column",gap:8,maxHeight:300,overflowY:"auto",marginBottom:12}}>
+          {msgs.length===0?<div style={{textAlign:"center",padding:20,color:C.text3,fontSize:13}}>No messages yet. Say hello!</div>:
+          msgs.map(m=><div key={m.id} style={{display:"flex",flexDirection:"column",alignItems:m.from==="coach"?"flex-start":"flex-end"}}>
+            <div style={{maxWidth:"80%",padding:"9px 13px",fontSize:13,lineHeight:1.5,background:m.from==="coach"?C.accent:C.bg3,color:"#fff",borderRadius:m.from==="coach"?"4px 13px 13px 13px":"13px 4px 13px 13px"}}>{m.text}</div>
+            <div style={{fontSize:10,color:C.text3,marginTop:3}}>{m.from==="coach"?"Coach":"You"} · {new Date(m.at).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</div>
+          </div>)}
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+          <textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} rows={1} placeholder="Message your coach..." style={{flex:1,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}/>
+          <button onClick={send} style={{width:40,height:40,borderRadius:"50%",background:C.accent,border:"none",color:"#fff",fontSize:18,cursor:"pointer",flexShrink:0}}>➤</button>
+        </div>
+      </div>}
+    </Card>}
+  </div>;
+}
+
+function RunnerDashboard({user}){
+  const[tab,setTab]=useState("plans");const[weeklyDone,setWeeklyDone]=useState(false);
+  const reports=S.get("ir_all_reports",[]).filter(r=>r.runner===user.name);const last=reports[0];
+  const ini=user.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();const rec=last?calcRec(last):null;
+  return <div>
+    <div style={{background:"linear-gradient(135deg,#1a1a2e,#0d1117)",border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
+        <div style={{width:56,height:56,borderRadius:"50%",background:"rgba(192,57,43,.15)",border:`2px solid ${C.accent}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:700,color:C.accent}}>{ini}</div>
+        <div><div style={{fontSize:18,fontWeight:700}}>{user.name}</div><div style={{fontSize:12,color:C.text3}}>Runner</div></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {[{v:last?last.km+"km":"—",l:"This week"},{v:last?last.sessions:"—",l:"Sessions"},{v:rec?rec+"%":"—",l:"Recovery",c:rec>=70?C.green:rec>=50?C.warn:C.danger}].map(x=><div key={x.l} style={{background:"rgba(255,255,255,.04)",borderRadius:8,padding:10,textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:x.c||C.accent}}>{x.v}</div><div style={{fontSize:10,color:C.text3,marginTop:2}}>{x.l}</div></div>)}
+      </div>
+    </div>
+    <Tabs tabs={[{id:"plans",label:"📅 Plans"},{id:"weekly",label:"📋 Weekly"},{id:"stats",label:"📊 Stats"},{id:"strategy",label:"🎯 Strategy"},{id:"coach",label:"👤 Coach"}]} active={tab} onChange={setTab}/>
+    {tab==="plans"&&<AthletePlans name={user.name}/>}
+    {tab==="weekly"&&(weeklyDone?<div style={{textAlign:"center",padding:"60px 20px"}}>
+      <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(39,174,96,.15)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",fontSize:32}}>✓</div>
+      <div style={{fontSize:20,fontWeight:700,marginBottom:8}}>Report submitted!</div>
+      <Btn onClick={()=>setWeeklyDone(false)}>New report</Btn>
+    </div>:<WeeklyForm name={user.name} onDone={()=>setWeeklyDone(true)}/>)}
+    {tab==="stats"&&<div>
+      {reports.length===0?<div style={{textAlign:"center",padding:40,color:C.text3}}><div style={{fontSize:32,marginBottom:8}}>📊</div><p style={{fontSize:13}}>Submit your first weekly report.</p></div>:<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+          {[{l:"Total km",v:Math.round(reports.reduce((s,r)=>s+(r.km||0),0))+"km",c:C.accent},{l:"Reports",v:reports.length},{l:"Best week",v:Math.max(...reports.map(r=>r.km||0))+"km",c:C.green},{l:"Avg/week",v:Math.round(reports.reduce((s,r)=>s+(r.km||0),0)/reports.length)+"km"}].map(x=><div key={x.l} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:12,textAlign:"center"}}><div style={{fontSize:22,fontWeight:700,color:x.c||C.text}}>{x.v}</div><div style={{fontSize:10,color:C.text3,marginTop:3}}>{x.l}</div></div>)}
+        </div>
+      </div>}
+    </div>}
+    {tab==="strategy"&&<StrategyTab/>}
+    {tab==="coach"&&<RunnerCoachTab name={user.name}/>}
+  </div>;
+}
+
+function CoachChatBox({runner}){
+  const[msgs,setMsgs]=useState(()=>S.get("ir_chat_"+runner,[]));
+  const[text,setText]=useState("");
+  const ref=useRef(null);
+  useEffect(()=>{
+    const load=()=>{setMsgs(S.get("ir_chat_"+runner,[]));setTimeout(()=>ref.current&&(ref.current.scrollTop=ref.current.scrollHeight),50);};
+    load();
+    const t=setInterval(load,2000);
+    return ()=>clearInterval(t);
+  },[runner]);
+  const send=()=>{
+    if(!text.trim())return;
+    const t=text;setText("");
+    const all=S.get("ir_chat_"+runner,[]);
+    all.push({id:S.id(),from:"coach",text:t,at:new Date().toISOString()});
+    S.set("ir_chat_"+runner,all);
+    setMsgs([...all]);
+    setTimeout(()=>ref.current&&(ref.current.scrollTop=ref.current.scrollHeight),50);
+  };
+  return <div>
+    <div ref={ref} style={{display:"flex",flexDirection:"column",gap:8,maxHeight:200,overflowY:"auto",marginBottom:10,minHeight:60}}>
+      {msgs.length===0
+        ?<div style={{color:C.text3,fontSize:13,textAlign:"center",padding:16}}>No messages yet.</div>
+        :msgs.map(m=><div key={m.id} style={{display:"flex",flexDirection:"column",alignItems:m.from==="coach"?"flex-start":"flex-end"}}>
+          <div style={{maxWidth:"80%",padding:"8px 12px",fontSize:13,lineHeight:1.5,background:m.from==="coach"?C.accent:C.bg3,color:"#fff",borderRadius:m.from==="coach"?"4px 12px 12px 12px":"12px 4px 12px 12px"}}>{m.text}</div>
+          <div style={{fontSize:10,color:C.text3,marginTop:2}}>{m.from==="coach"?"You":"Athlete"} · {new Date(m.at).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</div>
+        </div>)}
+    </div>
+    <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+      <textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} rows={1} placeholder={"Message "+runner+"..."} style={{flex:1,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}/>
+      <button onClick={send} style={{width:40,height:40,borderRadius:"50%",background:C.accent,border:"none",color:"#fff",fontSize:18,cursor:"pointer",flexShrink:0}}>➤</button>
+    </div>
+  </div>;
+}
+
+function CoachProfileTab(){
+  const[profile,setProfile]=useState(()=>S.get("ir_coach_profile",{name:"IranRunners Coach",bio:"",speciality:"",experience:"",phone:"",instagram:""}));
+  const[saving,setSaving]=useState(false);
+  const sp=(k,v)=>setProfile(p=>({...p,[k]:v}));
+  const save=()=>{setSaving(true);S.set("ir_coach_profile",profile);setSaving(false);alert("Profile saved! Athletes can find you by searching your name.");};
+  const ini=profile.name?profile.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"C";
+  return <div>
+    <div style={{background:"linear-gradient(135deg,#1a1a2e,#0d1117)",border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:12,display:"flex",alignItems:"center",gap:14}}>
+      <div style={{width:64,height:64,borderRadius:"50%",background:"rgba(192,57,43,.15)",border:`2px solid ${C.accent}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:700,color:C.accent}}>{ini}</div>
+      <div>
+        <div style={{fontSize:18,fontWeight:700}}>{profile.name||"Coach"}</div>
+        <div style={{fontSize:12,color:C.text3,marginTop:2}}>Coach Profile</div>
+        {profile.speciality&&<div style={{marginTop:6}}><Tag color={C.blue}>{profile.speciality}</Tag></div>}
+      </div>
+    </div>
+    <div style={{fontSize:12,color:C.text3,background:"rgba(192,57,43,.08)",border:"1px solid rgba(192,57,43,.2)",borderRadius:8,padding:10,marginBottom:12}}>
+      💡 Athletes search for coaches by name. Complete your profile so they can find and follow you.
+    </div>
+    <Card title="Coach Profile">
+      <Fld label="Display Name"><Inp placeholder="Your name" value={profile.name||""} onChange={e=>sp("name",e.target.value)}/></Fld>
+      <Fld label="Bio"><textarea value={profile.bio||""} onChange={e=>sp("bio",e.target.value)} rows={3} placeholder="Tell athletes about yourself, your coaching style and experience..." style={{width:"100%",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.text,outline:"none",resize:"none"}}/></Fld>
+      <Fld label="Speciality">
+        <Chips value={profile.speciality||""} onChange={v=>sp("speciality",v)} options={["Marathon","Trail running","Speed & track","Triathlon","Youth coaching","Rehabilitation","5K & 10K","Ultra marathon"]}/>
+      </Fld>
+      <Fld label="Years of experience"><Inp type="number" placeholder="e.g. 8" value={profile.experience||""} onChange={e=>sp("experience",e.target.value)}/></Fld>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Fld label="Phone (optional)"><Inp placeholder="+98..." value={profile.phone||""} onChange={e=>sp("phone",e.target.value)}/></Fld>
+        <Fld label="Instagram (optional)"><Inp placeholder="@username" value={profile.instagram||""} onChange={e=>sp("instagram",e.target.value)}/></Fld>
+      </div>
+    </Card>
+    <Card title="My Stats">
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {[{l:"Athletes",v:new Set(S.get("ir_all_reports",[]).map(r=>r.runner)).size},{l:"Plans sent",v:S.get("ir_plans",[]).length},{l:"Reports",v:S.get("ir_all_reports",[]).length}].map(x=><div key={x.l} style={{background:C.bg3,borderRadius:8,padding:10,textAlign:"center"}}><div style={{fontSize:20,fontWeight:700,color:C.accent}}>{x.v}</div><div style={{fontSize:10,color:C.text3,marginTop:2}}>{x.l}</div></div>)}
+      </div>
+    </Card>
+    <Btn onClick={save} loading={saving}>Save Profile</Btn>
+  </div>;
+}
+
+function CoachPanel(){
+  const[unlocked,setUnlocked]=useState(false);const[pass,setPass]=useState("");const[err,setErr]=useState("");
+  const[tab,setTab]=useState("athletes");const[selRunner,setSelRunner]=useState(null);const[chatMsg,setChatMsg]=useState("");const[chatMsgs,setChatMsgs]=useState([]);const chatRef=useRef(null);
+  useEffect(()=>{if(selRunner){const msgs=S.get("ir_chat_"+selRunner.runner,[]);setChatMsgs(msgs);setTimeout(()=>chatRef.current&&(chatRef.current.scrollTop=chatRef.current.scrollHeight),100);}}, [selRunner]);
+  const refreshChat=()=>{if(selRunner){const msgs=S.get("ir_chat_"+selRunner.runner,[]);setChatMsgs(msgs);setTimeout(()=>chatRef.current&&(chatRef.current.scrollTop=chatRef.current.scrollHeight),100);}};
+  const[planView,setPlanView]=useState("list");const[editPlan,setEditPlan]=useState(null);const[plans,setPlans]=useState(()=>S.get("ir_plans",[]));
+  const reports=S.get("ir_all_reports",[]);const latest={};reports.forEach(r=>{if(!latest[r.runner])latest[r.runner]=r;});const runners=Object.values(latest);
+  const coachId=S.get("ir_coach_profile",{}).id||"coach-1";
+  const followers=S.get("ir_followers_default",[]).map(f=>f.name);
+  const allRunners=[...new Set([...followers,...reports.map(r=>r.runner)])];const feedbacks=S.get("ir_feedbacks",{});
+  const dangers=runners.filter(r=>r.status==="danger").length;const warns=runners.filter(r=>r.status==="warn").length;
+  const colors=["#16a34a","#0891b2","#7c3aed","#b45309","#be185d","#0f766e","#1d4ed8","#b91c1c"];
+  const reload=()=>setPlans(S.get("ir_plans",[]));
+  const sendChat=name=>{if(!chatMsg.trim())return;const msgs=S.get("ir_chat_"+name,[]);msgs.push({id:S.id(),from:"coach",text:chatMsg,at:new Date().toISOString()});S.set("ir_chat_"+name,msgs);setChatMsg("");setChatMsgs(msgs);setTimeout(()=>chatRef.current&&(chatRef.current.scrollTop=chatRef.current.scrollHeight),100);};
+  if(!unlocked)return <div style={{minHeight:"80vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:40,textAlign:"center"}}>
+    <div style={{fontSize:44,marginBottom:20}}>🔒</div><div style={{fontSize:22,fontWeight:700,marginBottom:6}}>Coach Panel</div>
+    <div style={{fontSize:14,color:C.text2,marginBottom:32}}>Enter your password</div>
+    <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(pass===COACH_PASS?(setUnlocked(true),setErr("")):(setErr("Wrong password"),setPass("")))} placeholder="••••••" style={{width:"100%",maxWidth:240,background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:14,fontSize:20,color:C.text,outline:"none",textAlign:"center",letterSpacing:8,marginBottom:12}}/>
+    <Btn onClick={()=>{if(pass===COACH_PASS){setUnlocked(true);setErr("");}else{setErr("Wrong password");setPass("");}}} >Enter</Btn>
+    {err&&<div style={{color:C.danger,fontSize:13,marginTop:8}}>{err}</div>}
+  </div>;
+  return <div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:14}}>
+      {[{v:runners.length,l:"Athletes",c:C.green},{v:warns+dangers,l:"Attention",c:C.warn},{v:dangers,l:"Injury",c:C.danger}].map(x=><div key={x.l} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 8px",textAlign:"center"}}><div style={{fontSize:22,fontWeight:700,color:x.c}}>{x.v}</div><div style={{fontSize:10,color:C.text3,marginTop:2}}>{x.l}</div></div>)}
+    </div>
+    <Tabs tabs={[{id:"athletes",label:"👥 Athletes"},{id:"plans",label:"📅 Plans"},{id:"feedback",label:"💬 Feedback"},{id:"alerts",label:"🚨 Alerts"},{id:"myprofile",label:"👤 Profile"}]} active={tab} onChange={t=>{setTab(t);if(t==="plans"){setPlanView("list");reload();} }}/>
+    {tab==="athletes"&&<div>
+      {(()=>{
+        const coachId=S.get("ir_coach_profile",{}).id||"coach-1";
+        const followers=S.get("ir_followers_default",[]);
+        const allNames=[...new Set([...followers.map(f=>f.name),...runners.map(r=>r.runner)])];
+        if(!allNames.length) return <div style={{textAlign:"center",padding:40,color:C.text3}}><div style={{fontSize:32,marginBottom:8}}>👥</div><p style={{fontSize:13}}>No athletes yet.<br/>Share your name so runners can find and follow you.</p></div>;
+        return <div>
+          <div style={{fontSize:12,color:C.text3,marginBottom:12}}>{allNames.length} athlete{allNames.length!==1?"s":""} connected</div>
+          {allNames.map((n,i)=>{
+            const r=latest[n];
+            const follower=followers.find(f=>f.name===n);
+            const ini=n.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+            const col=colors[i%colors.length];
+            const dotCol=r?(r.status==="danger"?C.danger:r.status==="warn"?C.warn:C.green):C.text3;
+            const ago=r?Math.round((Date.now()-new Date(r.createdAt))/60000):null;
+            const agoStr=ago===null?null:ago<60?ago+"m ago":ago<1440?Math.round(ago/60)+"h ago":Math.round(ago/1440)+"d ago";
+            return <div key={n} onClick={()=>setSelRunner(r||{runner:n,km:0,sessions:0,status:"ok",alerts:[],createdAt:follower?.joinedAt||new Date().toISOString()})} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+              <div style={{width:42,height:42,borderRadius:"50%",background:col+"22",color:col,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,flexShrink:0}}>{ini}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:700}}>{n}</div>
+                {r?<div style={{fontSize:12,color:C.text2,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.km||0}km · {r.sessions||0} sessions · {agoStr}</div>
+                :<div style={{fontSize:12,color:C.text3,marginTop:2}}>Followed {follower?new Date(follower.joinedAt).toLocaleDateString():"recently"} · No reports yet</div>}
+                {r&&<div style={{display:"flex",gap:4,marginTop:5,flexWrap:"wrap"}}>{r.alerts?.length?r.alerts.map(a=><Tag key={a} color={r.status==="danger"?C.danger:C.warn}>{a}</Tag>):<Tag color={C.green}>Healthy</Tag>}</div>}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:dotCol}}/>
+                {!r&&<div style={{fontSize:9,color:C.text3}}>New</div>}
+              </div>
+            </div>;
+          })}
+        </div>;
+      })()}      {selRunner&&<div onClick={e=>e.target===e.currentTarget&&setSelRunner(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:200,display:"flex",alignItems:"flex-end"}}>
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:"14px 14px 0 0",width:"100%",maxHeight:"90vh",overflowY:"auto",padding:20}}>
+          <div style={{width:32,height:3,background:C.border,borderRadius:2,margin:"0 auto 16px"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+            <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(8,145,178,.15)",color:"#0891b2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700}}>{selRunner.runner.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}</div>
+            <div><div style={{fontSize:16,fontWeight:700}}>{selRunner.runner}</div><div style={{fontSize:12,color:C.text2}}>{new Date(selRunner.createdAt).toLocaleDateString()}</div></div>
+            <button onClick={()=>setSelRunner(null)} style={{marginLeft:"auto",background:C.bg3,border:"none",color:C.text2,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:14}}>✕</button>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+            {[{l:"Volume",v:(selRunner.km||"—")+"km",c:C.green},{l:"Sessions",v:selRunner.sessions||"—"},{l:"Long run",v:(selRunner.longRun||"—")+"km"},{l:"Resting HR",v:(selRunner.rhr||"—")+"bpm",c:selRunner.rhr>65?C.warn:null},{l:"Sleep",v:(selRunner.sleep||"—")+(selRunner.sleepHrs?" / "+selRunner.sleepHrs+"h":"")},{l:"Motivation",v:(selRunner.motivation||"—")+"/5",c:selRunner.motivation<=2?C.warn:null},{l:"Stress",v:selRunner.stress||"—"},{l:"Energy",v:selRunner.energy||"—"}].map(x=><div key={x.l} style={{background:C.bg3,borderRadius:8,padding:10}}><div style={{fontSize:10,color:C.text3,marginBottom:3}}>{x.l}</div><div style={{fontSize:14,fontWeight:700,color:x.c||C.text}}>{x.v}</div></div>)}
+          </div>
+          {selRunner.notes&&<div style={{marginBottom:12}}><div style={{fontSize:10,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:6}}>Notes</div><div style={{fontSize:13,color:C.text2,background:C.bg3,borderRadius:8,padding:12,lineHeight:1.7}}>{selRunner.notes}</div></div>}
+          <div style={{fontSize:10,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}}>Chat with {selRunner.runner}</div>
+          <CoachChatBox runner={selRunner.runner}/>
+        </div>
+      </div>}
+    </div>}
+    {tab==="plans"&&<div>
+      {planView==="list"&&<div>
+        <button onClick={()=>{setEditPlan(null);setPlanView("new");}} style={{width:"100%",padding:14,borderRadius:12,border:`2px dashed ${C.accent}`,background:"rgba(192,57,43,.05)",color:C.accent,fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:14}}>+ Create New Training Plan</button>
+        {plans.length===0?<div style={{textAlign:"center",padding:40,color:C.text3}}><div style={{fontSize:32,marginBottom:8}}>📅</div><p style={{fontSize:13}}>No plans yet.</p></div>:
+        plans.map(p=><div key={p.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:14,marginBottom:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+            <div><div style={{fontSize:14,fontWeight:700}}>{p.runner}</div><div style={{fontSize:11,color:C.text3,marginTop:2}}>{p.weekLabel||p.weekStart||"No date"} · {p.intensity}</div></div>
+            <button onClick={()=>{setEditPlan(p);setPlanView("edit");}} style={{padding:"6px 12px",borderRadius:20,border:`1px solid ${C.warn}`,background:"rgba(243,156,18,.1)",color:C.warn,fontSize:11,fontWeight:600,cursor:"pointer"}}>✏️ Edit</button>
+          </div>
+          <pre style={{fontSize:12,color:C.text2,lineHeight:1.8,whiteSpace:"pre-wrap",fontFamily:"monospace",background:C.bg3,borderRadius:8,padding:8,maxHeight:72,overflow:"hidden"}}>{(p.text||"").slice(0,180)}{p.text?.length>180?"...":""}</pre>
+        </div>)}
+      </div>}
+      {(planView==="new"||planView==="edit")&&<PlanBuilder runners={allRunners} editPlan={planView==="edit"?editPlan:null} onSave={()=>{reload();setPlanView("list");}} onCancel={()=>setPlanView("list")}/>}
+    </div>}
+    {tab==="feedback"&&<div>
+      {plans.length===0?<div style={{textAlign:"center",padding:40,color:C.text3}}><div style={{fontSize:32,marginBottom:8}}>💬</div><p style={{fontSize:13}}>No plans yet.</p></div>:
+      plans.map(p=>{const pFbs=Object.entries(feedbacks).filter(([k])=>k.startsWith(p.id+"_")).map(([k,v])=>({day:k.slice(p.id.length+1),fb:v}));
+      return <div key={p.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:14,marginBottom:10}}>
+        <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>{p.runner}</div>
+        <div style={{fontSize:11,color:C.text3,marginBottom:10}}>{p.weekLabel||p.weekStart}</div>
+        {pFbs.length===0?<div style={{fontSize:12,color:C.text3,fontStyle:"italic"}}>No feedback yet.</div>:
+        pFbs.map(({day,fb})=><div key={day} style={{background:C.bg3,borderRadius:8,padding:10,marginBottom:6}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <b style={{fontSize:13}}>{day}</b>
+            <div style={{display:"flex",gap:4}}>{fb.done===true&&<Tag color={C.green}>✅ Done</Tag>}{fb.done===false&&<Tag color={C.danger}>❌</Tag>}{fb.feel&&<Tag color={C.blue}>{fb.feel}</Tag>}</div>
+          </div>
+          <div style={{fontSize:12,color:C.text2,lineHeight:1.6}}>{fb.dist&&<span>📏 {fb.dist}km  </span>}{fb.pace&&<span>⏱ {fb.pace}/km  </span>}{fb.rpe&&<span>💪 RPE {fb.rpe}</span>}</div>
+          {fb.notes&&<div style={{fontSize:12,color:C.text3,marginTop:4,fontStyle:"italic"}}>{fb.notes}</div>}
+        </div>)}
+      </div>;})}
+    </div>}
+    {tab==="alerts"&&<div>
+      {runners.filter(r=>r.status!=="ok").length===0?<div style={{textAlign:"center",padding:40,color:C.text3}}><div style={{fontSize:32,marginBottom:8}}>✅</div><p style={{fontSize:13}}>No active alerts!</p></div>:
+      runners.filter(r=>r.status!=="ok").map(r=><div key={r.runner} style={{background:r.status==="danger"?"rgba(231,76,60,.1)":"rgba(243,156,18,.1)",border:`1px solid ${r.status==="danger"?"rgba(231,76,60,.3)":"rgba(243,156,18,.3)"}`,borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:13,color:r.status==="danger"?C.danger:C.warn}}><strong>{r.runner}</strong> — {(r.alerts||[]).join(", ")}<div style={{fontSize:11,marginTop:4,opacity:.7}}>{new Date(r.createdAt).toLocaleDateString()}</div></div>)}
+    </div>}
+
+    {tab==="myprofile"&&<CoachProfileTab/>}
+  </div>;
+}
+
+function App(){
+  const[page,setPage]=useState("home");
+  const[user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem("ir_user"));}catch(e){return null;}});
+  useEffect(()=>{if(user)setPage(user.role);},[]);
+  const loginAs=role=>{const u=role==="coach"?{id:"coach-1",name:"IranRunners Coach",role:"coach"}:{id:"runner-1",name:"Ali Rezaei",role:"runner"};localStorage.setItem("ir_user",JSON.stringify(u));setUser(u);setPage(role);};
+  const logout=()=>{localStorage.removeItem("ir_user");setUser(null);setPage("home");};
+  if(!user)return <div style={{background:C.bg,minHeight:"100vh",maxWidth:480,margin:"0 auto",fontFamily:"system-ui,-apple-system,Arial,sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 20px",textAlign:"center"}}>
+    <img src={`data:image/png;base64,${LOGO}`} style={{height:52,marginBottom:28}} alt=""/>
+    <div style={{fontSize:24,fontWeight:700,marginBottom:8,color:C.text}}>IranRunners</div>
+    <div style={{fontSize:14,color:C.text2,marginBottom:40,maxWidth:280,lineHeight:1.6}}>Track your training, stay connected with your coach.</div>
+    <div style={{width:"100%",maxWidth:300,display:"flex",flexDirection:"column",gap:12}}>
+      <button onClick={()=>loginAs("runner")} style={{width:"100%",padding:16,borderRadius:14,border:"none",background:C.accent,color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}><span style={{fontSize:24}}>🏃</span> Continue as Runner</button>
+      <button onClick={()=>loginAs("coach")} style={{width:"100%",padding:16,borderRadius:14,border:`1px solid ${C.border}`,background:"transparent",color:C.text,fontSize:16,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}><span style={{fontSize:24}}>📋</span> Continue as Coach</button>
+    </div>
+  </div>;
+  return <div style={{background:C.bg,color:C.text,minHeight:"100vh",maxWidth:480,margin:"0 auto",fontFamily:"system-ui,-apple-system,Arial,sans-serif"}}>
+    <nav style={{position:"sticky",top:0,zIndex:100,background:"rgba(13,17,23,.96)",backdropFilter:"blur(16px)",borderBottom:`1px solid ${C.border}`,padding:"0 16px",display:"flex",alignItems:"center",justifyContent:"space-between",height:54}}>
+      <img src={`data:image/png;base64,${LOGO}`} style={{height:32,objectFit:"contain"}} alt=""/>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:12,color:C.text3}}>{user.name.split(" ")[0]}</span>
+        <button onClick={logout} style={{background:"none",border:`1px solid ${C.border}`,color:C.text3,padding:"4px 8px",borderRadius:20,fontSize:11,cursor:"pointer"}}>Logout</button>
+      </div>
+    </nav>
+    <div style={{padding:16,paddingBottom:90}}>
+      {page==="runner"&&<RunnerDashboard user={user}/>}
+      {page==="coach"&&<CoachPanel/>}
+    </div>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,maxWidth:480,margin:"0 auto",background:"rgba(13,17,23,.96)",backdropFilter:"blur(16px)",borderTop:`1px solid ${C.border}`,display:"flex",paddingBottom:"calc(8px + env(safe-area-inset-bottom))",paddingTop:8,zIndex:100}}>
+      {[{id:"runner",icon:"🏃",label:"Runner"},{id:"coach",icon:"📋",label:"Coach"}].map(b=><button key={b.id} onClick={()=>loginAs(b.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:6,color:page===b.id?C.accent:C.text3,fontSize:10,fontWeight:500}}><span style={{fontSize:20}}>{b.icon}</span><span>{b.label}</span></button>)}
+    </div>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
